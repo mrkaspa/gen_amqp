@@ -1,0 +1,2 @@
+defmodule GenAMQP do
+end
