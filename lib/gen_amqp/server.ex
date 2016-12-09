@@ -49,15 +49,10 @@ defmodule GenAMQP.Server do
         end
 
         def init(name) do
-          Process.flag(:trap_exit, true)
           Logger.info("Starting #{name}")
           {:ok, pid} = GenAMQP.Conn.start_link()
           :ok = Conn.subscribe(pid, unquote(event))
           {:ok, %{consumer_tag: nil, conn_name: pid}}
-        end
-
-        def handle_info({:EXIT, _pid, reason}, _state) do
-          {:stop, reason}
         end
 
         def handle_info({:basic_deliver, payload, meta}, %{conn_name: conn_name} = state) do
@@ -87,10 +82,6 @@ defmodule GenAMQP.Server do
 
         defp reply(conn_name, %{reply_to: _, correlation_id: _} = meta, resp) do
           Conn.response(conn_name, meta, resp)
-        end
-
-        def terminate(reason, %{conn_name: conn_name} = _state) do
-          Logger.error("Terminating #{__MODULE__}")
         end
       end
     end

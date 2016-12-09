@@ -140,10 +140,14 @@ defmodule GenAMQP.Conn do
     {:reply, :ok, new_state}
   end
 
-  def terminate(_reason, state) do
+  def handle_cast(:stop, state) do
     Logger.info("Closing AMQP Connection")
     AMQP.Connection.close(state.conn)
-    :normal
+    {:stop, :normal, state}
+  end
+
+  def terminate(_reason, state) do
+    :ok
   end
 
   @spec consume(pid, struct, String.t) :: {:ok, any}
