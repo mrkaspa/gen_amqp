@@ -49,7 +49,6 @@ defmodule GenAMQP.Server do
         end
 
         def init(name) do
-          Process.flag(:trap_exit, true)
           Logger.info("Starting #{name}")
           {:ok, pid} = GenAMQP.Conn.start_link()
           :ok = Conn.subscribe(pid, unquote(event))
