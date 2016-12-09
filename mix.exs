@@ -3,7 +3,7 @@ defmodule GenAMQP.Mixfile do
 
   def project do
     [app: :gen_amqp,
-     version: "0.1.2",
+     version: "0.1.3",
      elixir: "~> 1.3",
      description: description,
      package: package,
@@ -27,7 +27,7 @@ defmodule GenAMQP.Mixfile do
     if Mix.env == :test do
       [applications: [:logger, :amqp, :amqp_client], mod: {DemoApp, []}]
     else
-      [applications: [:logger, :amqp, :amqp_client]]
+      [applications: [:logger, :amqp, :amqp_client], mod: {GenAMQP, []}]
     end
   end
 
