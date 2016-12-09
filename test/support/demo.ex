@@ -18,6 +18,7 @@ defmodule DemoApp do
 
     # Define supervisors and child supervisors to be supervised
     children = [
+      supervisor(GenAMQP.Supervisor, []),
       supervisor(ServerDemo, []),
     ]
 
