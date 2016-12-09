@@ -5,12 +5,19 @@ defmodule GenAMQP.Mixfile do
     [app: :gen_amqp,
      version: "0.1.0",
      elixir: "~> 1.3",
+     description: description,
      package: package,
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
      test_coverage: [tool: ExCoveralls]]
+  end
+
+  defp description do
+    """
+    GenAMQP is a set of utilities to make microservices using the worker pattern
+    """
   end
 
   # Configuration for the OTP application
@@ -40,9 +47,11 @@ defmodule GenAMQP.Mixfile do
     [
       {:amqp, "0.1.5"},
       {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", override: true},
+      {:poison, "~> 2.0"},
       {:ex_doc, "~> 0.12", only: :doc},
       {:dialyxir, "~> 0.4.1", only: :dev},
       {:credo, github: "rrrene/credo", only: :dev},
+      {:ex_doc, "~> 0.14.5", only: :dev},
       {:excoveralls, "~> 0.5", only: :test}
     ]
   end
