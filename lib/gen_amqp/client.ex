@@ -22,13 +22,13 @@ defmodule GenAMQP.Client do
   def publish(exchange, payload) do
     {:ok, pid} = GenAMQP.Conn.start_link()
     Conn.publish(pid, exchange, payload)
-    true = Process.exit(pid, :normal)
+    GenServer.cast(pid, :stop)
   end
 
   defp wait_response(pid, correlation_id) do
     receive do
       {:basic_deliver, payload, %{correlation_id: ^correlation_id}} ->
-        true = Process.exit(pid, :normal)
+        GenServer.cast(pid, :stop)
         payload
       _ -> wait_response(pid, correlation_id)
     end
