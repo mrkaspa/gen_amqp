@@ -87,10 +87,8 @@ defmodule GenAMQP.Server do
         end
 
         def terminate(reason, %{conn_pid: conn_pid} = _state) do
-          #TODO set logs
           :ok = Supervisor.terminate_child(GenAMQP.Supervisor, conn_pid)
-          Logger.error("Terminate #{__MODULE__}")
-          Logger.error(reason)
+          Logger.error("Terminate #{__MODULE__}, reason: #{inspect(reason)}")
         end
       end
     end
