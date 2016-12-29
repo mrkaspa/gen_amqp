@@ -80,6 +80,10 @@ defmodule GenAMQP.Server do
           {:noreply, %{state | consumer_tag: consumer_tag}}
         end
 
+        def handle_info({:EXIT, _pid, reason}, state) do
+          Logger.info("Exited #{__MODULE__}, reason: #{inspect(reason)}")
+        end
+
         defp reply(_conn_name, %{reply_to: :undefined, correlation_id: :undefined} = meta, resp), do: nil
 
         defp reply(conn_name, %{reply_to: _, correlation_id: _} = meta, resp) do
