@@ -1,5 +1,5 @@
-%{"amqp": {:hex, :amqp, "0.1.5", "f38e30abfce06fd2213f5e24744a2923f9d3c30f1687db19952be547457e0e7b", [:mix], [{:amqp_client, "3.5.6", [hex: :amqp_client, optional: false]}]},
-  "amqp_client": {:git, "https://github.com/jbrisbin/amqp_client.git", "d50aec00b94f0766a048b4eceaf25ddfdeeb1d86", [tag: "rabbitmq-3.6.2"]},
+%{"amqp": {:hex, :amqp19, "0.1.5", "0a05693c9ff7cb8f77db3615012882af594fcc2fddc94bd62894b279003ab406", [:mix], [{:amqp_client, "3.6.2", [hex: :conduit_amqp_client, optional: false]}]},
+  "amqp_client": {:hex, :conduit_amqp_client, "3.6.2", "1f39c67c634b0f798a270ffcc8e70fff93bba8f9857b9ba03857a3394962a320", [:rebar3], [{:rabbit_common, "3.5.6", [hex: :rabbit_common, optional: false]}]},
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], []},
   "certifi": {:hex, :certifi, "0.7.0", "861a57f3808f7eb0c2d1802afeaae0fa5de813b0df0979153cbafcd853ababaf", [:rebar3], []},
   "credo": {:git, "https://github.com/rrrene/credo.git", "462de8e3ac1f5ff02f34171746088a6a0bb8f4af", []},
@@ -14,5 +14,5 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], []},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], []},
   "poison": {:hex, :poison, "2.2.0", "4763b69a8a77bd77d26f477d196428b741261a761257ff1cf92753a0d4d24a63", [:mix], []},
-  "rabbit_common": {:git, "https://github.com/jbrisbin/rabbit_common.git", "80814606ae23cc820c74e443383e192cd69ec030", [ref: ""]},
+  "rabbit_common": {:hex, :rabbit_common, "3.5.6", "ad541be86f08cdb1c04320eb4353ad30f25555569c95cc062af28cf79b74d085", [:rebar], []},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], []}}

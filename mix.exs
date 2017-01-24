@@ -25,9 +25,9 @@ defmodule GenAMQP.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     if Mix.env == :test do
-      [applications: [:logger, :amqp, :amqp_client], mod: {DemoApp, []}]
+      [applications: [:logger, :amqp], mod: {DemoApp, []}]
     else
-      [applications: [:logger, :amqp, :amqp_client], mod: {GenAMQP, []}]
+      [applications: [:logger, :amqp], mod: {GenAMQP, []}]
     end
   end
 
@@ -45,8 +45,8 @@ defmodule GenAMQP.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:amqp, "0.1.5"},
-      {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", tag: "rabbitmq-3.6.2", override: true},
+      {:amqp, "~> 0.1.5", hex: :amqp19},
+      # {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", tag: "rabbitmq-3.6.2", override: true},
       {:poison, "~> 2.0"},
       {:ex_doc, "~> 0.12", only: :doc},
       {:dialyxir, "~> 0.4.1", only: :dev},

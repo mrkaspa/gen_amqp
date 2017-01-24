@@ -10,7 +10,7 @@ defmodule GenAMQP do
     children = [
       supervisor(GenAMQP.Supervisor, []),
     ]
-    
+
     opts = [strategy: :one_for_one, name: GenAMQP.AppSupervisor]
     Supervisor.start_link(children, opts)
   end
