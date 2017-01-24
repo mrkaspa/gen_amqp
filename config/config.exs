@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :gen_amqp, GenAMQP.Conn,
-  amqp_url: System.get_env("RABBITCONN") || "amqp://guest:guest@localhost:5672"
+  amqp_url: System.get_env("RABBITCONN") || "amqps://liftit_user:liftit_pass@portal1921-10.temporal-rabbitmq.liftit-1.composedb.com:15836/temporal-rabbitmq"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

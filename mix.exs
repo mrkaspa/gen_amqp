@@ -45,8 +45,8 @@ defmodule GenAMQP.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:amqp, "~> 0.1.5", hex: :amqp19},
-      # {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", tag: "rabbitmq-3.6.2", override: true},
+      {:amqp, "~> 0.1.5"},
+      {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", tag: "rabbitmq-3.6.2", override: true},
       {:poison, "~> 2.0"},
       {:ex_doc, "~> 0.12", only: :doc},
       {:dialyxir, "~> 0.4.1", only: :dev},
