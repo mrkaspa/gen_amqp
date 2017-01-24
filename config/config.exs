@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :gen_amqp, GenAMQP.Conn,
-  amqp_url: System.get_env("RABBITCONN") || "amqp://@localhost"
+  amqp_url: System.get_env("RABBITCONN") || "amqp://guest:guest@localhost:5672"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

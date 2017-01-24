@@ -27,7 +27,8 @@ defmodule GenAMQP.Client do
       _ ->
         wait_response(pid, correlation_id)
     after
-      5_000 ->
+      10_000 ->
+        :ok = Supervisor.terminate_child(GenAMQP.Supervisor, pid)
         {:error, :timeout}
     end
   end
