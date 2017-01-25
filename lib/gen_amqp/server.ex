@@ -72,6 +72,14 @@ defmodule GenAMQP.Server do
                 message: reason
               })
               reply(conn_name, meta, resp)
+          rescue
+            e ->
+              resp = Poison.encode!(%{
+                status: :error,
+                code: 0,
+                message: inspect(e)
+              })
+              reply(conn_name, meta, resp)
           end
           {:noreply, state}
         end

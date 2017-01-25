@@ -7,16 +7,24 @@ defmodule GenAMQP.Client do
 
   @spec call(String.t, String.t) :: any
   def call(exchange, payload) do
-    {:ok, pid} = Supervisor.start_child(GenAMQP.ConnSupervisor, [])
-    {:ok, correlation_id} = Conn.request(pid, exchange, payload)
-    wait_response(pid, correlation_id)
+    case Supervisor.start_child(GenAMQP.ConnSupervisor, []) do
+      {:ok, pid} ->
+        {:ok, correlation_id} = Conn.request(pid, exchange, payload)
+        wait_response(pid, correlation_id)
+      _ ->
+        {:error, :amqp_conn}
+    end
   end
 
   @spec publish(String.t, String.t) :: any
   def publish(exchange, payload) do
-    {:ok, pid} = Supervisor.start_child(GenAMQP.ConnSupervisor, [])
-    Conn.publish(pid, exchange, payload)
-    :ok = Supervisor.terminate_child(GenAMQP.ConnSupervisor, pid)
+    case Supervisor.start_child(GenAMQP.ConnSupervisor, []) do
+      {:ok, pid} ->
+        Conn.publish(pid, exchange, payload)
+        :ok = Supervisor.terminate_child(GenAMQP.ConnSupervisor, pid)
+      _ ->
+        {:error, :amqp_conn}
+    end
   end
 
   def wait_response(pid, correlation_id) do
@@ -27,7 +35,7 @@ defmodule GenAMQP.Client do
       _ ->
         wait_response(pid, correlation_id)
     after
-      10_000 ->
+      5_000 ->
         :ok = Supervisor.terminate_child(GenAMQP.ConnSupervisor, pid)
         {:error, :timeout}
     end

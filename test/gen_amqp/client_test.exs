@@ -7,6 +7,8 @@ defmodule GenAMQP.ClientTest do
   end
 
   test "it crashes" do
-    assert Client.call("crash", "") == {:error, :timeout}
+    resp = Client.call("crash", "")
+    data = Poison.decode!(resp)
+    assert data["status"] == "error"
   end
 end

@@ -75,11 +75,11 @@ defmodule GenAMQP.Conn do
 
   def handle_call({:request, exchange, payload}, {pid_from, _}, %{chan: chan} = state) do
     correlation_id =
-      :erlang.unique_integer
-      |> :erlang.integer_to_binary
-      |> Base.encode64
+      :erlang.unique_integer()
+      |> :erlang.integer_to_binary()
+      |> Base.encode64()
 
-    {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, "", exclusive: true)
+    {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, "", exclusive: true, auto_delete: true)
     AMQP.Basic.consume(chan, queue_name, pid_from, no_ack: true)
 
     AMQP.Basic.publish(chan, "", exchange, payload,
@@ -140,8 +140,8 @@ defmodule GenAMQP.Conn do
     {:reply, :ok, new_state}
   end
 
-  def handle_info({:EXIT, _pid, reason}, data) do
-    {:stop, reason, data}
+  def handle_info({:EXIT, _pid, reason}, state) do
+    {:stop, reason, state}
   end
 
   def terminate(_reason, state) do
@@ -150,7 +150,7 @@ defmodule GenAMQP.Conn do
     :ok
   end
 
-  @spec consume(pid, struct, String.t) :: {:ok, any}
+  @spec consume(pid, struct, String.t) :: String.t
   defp consume(pid, chan, exchange) do
     {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, exchange)
     {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: true)
