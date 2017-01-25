@@ -8,7 +8,7 @@ defmodule GenAMQP do
 
     # Define supervisors and child supervisors to be supervised
     children = [
-      supervisor(GenAMQP.Supervisor, []),
+      supervisor(GenAMQP.ConnSupervisor, []),
     ]
 
     opts = [strategy: :one_for_one, name: GenAMQP.AppSupervisor]

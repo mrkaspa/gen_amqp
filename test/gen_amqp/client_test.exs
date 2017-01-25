@@ -5,4 +5,8 @@ defmodule GenAMQP.ClientTest do
   test "get a response" do
     assert Client.call("demo", "") == "ok"
   end
+
+  test "it crashes" do
+    assert Client.call("crash", "") == {:error, :timeout}
+  end
 end

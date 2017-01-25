@@ -1,4 +1,4 @@
-defmodule GenAMQP.Supervisor do
+defmodule GenAMQP.ConnSupervisor do
   @moduledoc """
   Main app
   """

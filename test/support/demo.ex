@@ -8,6 +8,16 @@ defmodule ServerDemo do
   end
 end
 
+defmodule ServerCrash do
+  @moduledoc false
+
+  use GenAMQP.Server, event: "crash"
+
+  def execute(_) do
+    raise "error"
+  end
+end
+
 defmodule DemoApp do
   @moduledoc false
 
@@ -18,8 +28,9 @@ defmodule DemoApp do
 
     # Define supervisors and child supervisors to be supervised
     children = [
-      supervisor(GenAMQP.Supervisor, []),
+      supervisor(GenAMQP.ConnSupervisor, []),
       supervisor(ServerDemo, []),
+      supervisor(ServerCrash, []),
     ]
 
     opts = [strategy: :one_for_one, name: Core.Supervisor]
