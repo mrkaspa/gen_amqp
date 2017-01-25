@@ -14,7 +14,7 @@ defmodule GenAMQP.ConnSupervisor do
   def init(_) do
     # Define workers and child supervisors to be supervised
     children = [
-      worker(GenAMQP.Conn, [], restart: :transient, shutdown: 1)
+      worker(GenAMQP.Conn, [], restart: :transient)
     ]
 
     supervise(children, strategy: :simple_one_for_one)
