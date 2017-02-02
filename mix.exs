@@ -5,11 +5,11 @@ defmodule GenAMQP.Mixfile do
     [app: :gen_amqp,
      version: "0.3.1",
      elixir: "~> 1.3",
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      elixirc_paths: elixirc_paths(Mix.env),
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
+     build_embedded: Mix.env() == :prod,
+     start_permanent: Mix.env() == :prod,
      deps: deps(),
      test_coverage: [tool: ExCoveralls]]
   end
@@ -24,7 +24,7 @@ defmodule GenAMQP.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    if Mix.env == :test do
+    if Mix.env() == :test do
       [applications: [:logger, :amqp], mod: {DemoApp, []}]
     else
       [applications: [:logger, :amqp], mod: {GenAMQP, []}]
