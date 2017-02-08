@@ -16,12 +16,18 @@ defmodule GenAMQP.Conn do
     GenServer.start_link(__MODULE__, [], name: name)
   end
 
-  # @spec create_chan(GenServer.name, String.t) :: any
+  @doc """
+  Creates a new channel
+  """
+  @spec create_chan(GenServer.name, atom) :: any
   def create_chan(name, chan_name) when is_atom(chan_name) do
     GenServer.call(name, {:create_chan, chan_name})
   end
 
-  # @spec close_chan(GenServer.name, String.t) :: any
+  @doc """
+  Closes a channel
+  """
+  @spec close_chan(GenServer.name, atom) :: any
   def close_chan(name, chan_name) when is_atom(chan_name) do
     GenServer.call(name, {:close_chan, chan_name})
   end
@@ -29,7 +35,7 @@ defmodule GenAMQP.Conn do
   @doc """
   Publish a message in an asynchronous way
   """
-  # @spec publish(GenServer.name, String.t, String.t) :: any
+  @spec publish(GenServer.name, String.t, String.t, atom) :: any
   def publish(name, exchange, payload, chan_name) do
     GenServer.call(name, {:publish, exchange, payload, chan_name})
   end
@@ -37,7 +43,7 @@ defmodule GenAMQP.Conn do
   @doc """
   Works like a request respone
   """
-  # @spec request(GenServer.name, String.t, String.t) :: any
+  @spec request(GenServer.name, String.t, String.t, atom) :: any
   def request(name, exchange, payload, chan_name) do
     GenServer.call(name, {:request, exchange, payload, chan_name})
   end
@@ -45,7 +51,7 @@ defmodule GenAMQP.Conn do
   @doc """
   Response a given request
   """
-  # @spec response(GenServer.name, map, String.t) :: any
+  @spec response(GenServer.name, map, String.t, atom) :: any
   def response(name, meta, payload, chan_name) do
     GenServer.call(name, {:response, meta, payload, chan_name})
   end
@@ -53,12 +59,12 @@ defmodule GenAMQP.Conn do
   @doc """
   Subscribes to an specific queue
   """
-  # @spec subscribe(GenServer.name, String.t, atom) :: :ok
+  @spec subscribe(GenServer.name, String.t, atom) :: :ok
   def subscribe(name, exchange, chan_name) do
     GenServer.call(name, {:subscribe, exchange, chan_name})
   end
 
-  # @spec unsubscribe(GenServer.name, String.t, atom) :: any
+  @spec unsubscribe(GenServer.name, String.t, atom) :: any
   def unsubscribe(name, exchange, chan_name) do
     GenServer.call(name, {:unsubscribe, exchange, chan_name})
   end
