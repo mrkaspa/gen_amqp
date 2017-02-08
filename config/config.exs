@@ -2,8 +2,11 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-config :gen_amqp, GenAMQP.Conn,
-  amqp_url: System.get_env("RABBITCONN") || "amqp://guest:guest@localhost"
+config :gen_amqp,
+  amqp_url: System.get_env("RABBITCONN") || "amqp://guest:guest@localhost",
+  conn_name: ConnHub,
+  static_sup_name: StaticConnSup,
+  dynamic_sup_name: DynamicConnSup
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
