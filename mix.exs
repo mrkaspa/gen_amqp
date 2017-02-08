@@ -3,7 +3,7 @@ defmodule GenAMQP.Mixfile do
 
   def project do
     [app: :gen_amqp,
-     version: "0.5.0",
+     version: "0.6.0",
      elixir: "~> 1.4",
      description: description(),
      package: package(),
@@ -45,9 +45,7 @@ defmodule GenAMQP.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:amqp, "~> 0.1.5"},
-      {:amqp_client, git: "https://github.com/jbrisbin/amqp_client.git", tag: "rabbitmq-3.6.2", override: true},
-      {:rabbit_common, "~> 3.6.7-pre.1", override: true},
+      {:amqp, "~> 0.2.0-pre.1"},
       {:poison, "~> 2.0"},
       {:uuid, "~> 1.1"},
       {:ex_doc, "~> 0.12", only: :doc},
