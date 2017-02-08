@@ -3,8 +3,8 @@ defmodule GenAMQP.Mixfile do
 
   def project do
     [app: :gen_amqp,
-     version: "0.3.1",
-     elixir: "~> 1.3",
+     version: "v0.4.6",
+     elixir: "~> 1.4",
      description: description(),
      package: package(),
      elixirc_paths: elixirc_paths(Mix.env),

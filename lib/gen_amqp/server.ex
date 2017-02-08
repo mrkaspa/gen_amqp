@@ -66,20 +66,10 @@ defmodule GenAMQP.Server do
             end
           catch
             :exit, reason ->
-              resp = Poison.encode!(%{
-                status: :error,
-                code: 0,
-                message: reason
-              })
-              reply(conn_name, meta, resp)
+              reply(conn_name, meta, create_error(reason))
           rescue
             e ->
-              resp = Poison.encode!(%{
-                status: :error,
-                code: 0,
-                message: inspect(e)
-              })
-              reply(conn_name, meta, resp)
+              reply(conn_name, meta, create_error(inspect(e)))
           end
           {:noreply, state}
         end
@@ -94,8 +84,21 @@ defmodule GenAMQP.Server do
 
         defp reply(_conn_name, %{reply_to: :undefined, correlation_id: :undefined} = meta, resp), do: nil
 
-        defp reply(conn_name, %{reply_to: _, correlation_id: _} = meta, resp) do
+        defp reply(conn_name, %{reply_to: _, correlation_id: _} = meta, resp) when is_binary(resp) do
           Conn.response(conn_name, meta, resp)
+        end
+
+        defp reply(conn_name, %{reply_to: _, correlation_id: _} = meta, resp) when not is_binary(resp) do
+          Logger.error("message in wrong type #{inspect(resp)}")
+          Conn.response(conn_name, meta, create_error("message in wrong type"))
+        end
+
+        defp create_error(error) do
+          Poison.encode!(%{
+            status: :error,
+            code: 0,
+            message: error
+          })
         end
 
         def handle_info({:EXIT, _pid, reason}, data) do
