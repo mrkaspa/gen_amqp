@@ -11,9 +11,14 @@ defmodule GenAMQP.Conn do
   @doc """
   Starts the connection
   """
+  @spec start_link() :: GenServer.on_start
+  def start_link() do
+    GenServer.start_link(__MODULE__, [nil])
+  end
+
   @spec start_link(GenServer.name) :: GenServer.on_start
-  def start_link(name \\ nil) do
-    GenServer.start_link(__MODULE__, [], name: name)
+  def start_link(name) do
+    GenServer.start_link(__MODULE__, [name], name: name)
   end
 
   @doc """
@@ -71,12 +76,27 @@ defmodule GenAMQP.Conn do
 
   # Private API
 
-  def init(_) do
+  def init([name]) do
+    Logger.info("Starting connection")
     Process.flag(:trap_exit, true)
     amqp_url = Application.get_env(:gen_amqp, :amqp_url)
     {:ok, conn} = AMQP.Connection.open(amqp_url)
     {:ok, chan} = AMQP.Channel.open(conn)
-    {:ok, %{conn: conn, chans: %{default: chan}, subscriptions: %{}, queues: %{}}}
+
+    case :ets.lookup(:conns, name) do
+      [{_, connected}] -> reconnect(connected)
+      _ -> :ok
+    end
+
+    {:ok, %{conn: conn, conn_name: name, chans: %{default: chan}, subscriptions: %{}, queues: %{}}}
+  end
+
+  defp reconnect(connected) do
+    Logger.info("restarting #{inspect(connected)}")
+    for gen_name <- connected, gen_name != :default do
+      IO.puts "gen #{gen_name}"
+      GenServer.cast(gen_name, :reconnect)
+    end
   end
 
   def handle_call({:create_chan, name}, _from, %{conn: conn} = state) do
@@ -126,9 +146,7 @@ defmodule GenAMQP.Conn do
     chan = chans[chan_name]
 
     new_queues =
-      Map.put_new_lazy(queues, pid_from, fn ->
-        consume(pid_from, chan, exchange)
-      end)
+      Map.put_new(queues, pid_from, consume(pid_from, chan, exchange))
 
     new_subscriptions =
       subscriptions
@@ -179,8 +197,15 @@ defmodule GenAMQP.Conn do
     {:stop, reason, state}
   end
 
-  def terminate(_reason, state) do
-    Logger.info("Closing AMQP Connection")
+  def terminate(reason, %{conn_name: conn_name, chans: chans} = state) do
+    Logger.info("Closing AMQP Connection reason: #{inspect(reason)}")
+    if conn_name != nil do
+      if reason in [:normal, :shutdown] or match?({:shutdown, _}, reason) do
+        :ets.delete(:conns, conn_name)
+      else
+        :ets.insert(:conns, {conn_name, Map.keys(chans)})
+      end
+    end
     AMQP.Connection.close(state.conn)
     :ok
   end

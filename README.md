@@ -10,7 +10,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:gen_amqp, git: "https://github.com/mrkaspa/gen_amqp.git", tag: "v0.6.0"}]
+      [{:gen_amqp, "~> 0.6.0"}]
     end
 
     def application do

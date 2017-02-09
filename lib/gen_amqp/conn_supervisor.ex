@@ -29,6 +29,7 @@ defmodule GenAMQP.ConnSupervisor do
 
   defp set_strategy(conn_name) do
     Logger.info("With static")
+    :ets.new(:conns, [:named_table, :set, :public])
 
     children = [
       worker(GenAMQP.Conn, [conn_name], restart: :transient)

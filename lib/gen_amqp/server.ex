@@ -47,7 +47,7 @@ defmodule GenAMQP.Server do
           |> String.to_atom
 
         def start_link(name) do
-          GenServer.start_link(__MODULE__, [name])
+          GenServer.start_link(__MODULE__, [name], name: name)
         end
 
         def init([name]) do
@@ -65,15 +65,22 @@ defmodule GenAMQP.Server do
           chan_name: chan_name, conn_created: conn_created}}
         end
 
-        def start_conn(server_name, nil) do
+        defp start_conn(server_name, nil) do
           conn_name = String.to_atom("#{server_name}.Conn")
           {:ok, conn_pid} = Supervisor.start_child(unquote(dynamic_sup_name), [conn_name])
           {conn_name, conn_pid, true}
         end
 
-        def start_conn(_server_name, conn_name) do
+        defp start_conn(_server_name, conn_name) do
           conn_pid = Process.whereis(conn_name)
           {conn_name, conn_pid, false}
+        end
+
+        def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do
+          Logger.info("Server #{chan_name} reconnecting to #{conn_name}")
+          :ok = Conn.create_chan(conn_name, chan_name)
+          :ok = Conn.subscribe(conn_name, unquote(event), chan_name)
+          {:noreply, state}
         end
 
         def handle_info({:basic_deliver, payload, meta}, %{conn_name: conn_name, chan_name: chan_name} = state) do

@@ -13,7 +13,7 @@ defmodule GenAMQP.ConnTest do
   end
 
   test "should terminate the conn", %{pid: pid} do
-    assert Process.exit(pid, :kill) == true
+    assert Process.exit(pid, :die) == true
   end
 
   test "should create and delete a channel", %{pid: pid} do
@@ -44,5 +44,20 @@ defmodule GenAMQP.ConnTest do
     assert Conn.unsubscribe(pid, "encrypt", :demo) == :ok
     Conn.publish(pid, "encrypt", "demo", :demo)
     refute_receive {:basic_deliver, "demo", _}
+  end
+
+  describe "with a managed connection" do
+    test "should keep the channels after death" do
+      # IO.inspect(state(ConnHub))
+      chans = state(ConnHub)[:chans]
+      assert Enum.count(chans) == 4
+      ConnHub
+      |> Process.whereis()
+      |> Process.exit(:die)
+      Process.sleep(1000)
+      assert Process.whereis(ConnHub) |> Process.alive?()
+      chans = state(ConnHub)[:chans]
+      assert Enum.count(chans) == 4
+    end
   end
 end
