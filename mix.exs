@@ -48,7 +48,6 @@ defmodule GenAMQP.Mixfile do
       {:amqp, "~> 0.2.0-pre.1"},
       {:poison, "~> 2.0"},
       {:uuid, "~> 1.1"},
-      {:ex_doc, "~> 0.12", only: :doc},
       {:dialyxir, "~> 0.4.1", only: :dev},
       {:credo, github: "rrrene/credo", only: :dev},
       {:ex_doc, "~> 0.14.5", only: :dev},
