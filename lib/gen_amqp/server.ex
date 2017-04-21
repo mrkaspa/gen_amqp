@@ -104,11 +104,8 @@ defmodule GenAMQP.Server do
           {:noreply, %{state | consumer_tag: consumer_tag}}
         end
 
-        def handle_info({:EXIT, _pid, reason}, state) do
-          Logger.info("Exited #{__MODULE__}, reason: #{inspect(reason)}")
-        end
-
         def handle_info({:EXIT, _pid, reason}, data) do
+          Logger.info("Exited #{__MODULE__}, reason: #{inspect(reason)}")
           {:stop, reason, data}
         end
 
