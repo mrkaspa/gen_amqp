@@ -95,6 +95,8 @@ defmodule GenAMQP.Server do
               reply(conn_name, chan_name, meta, create_error(reason))
           rescue
             e ->
+              Logger.error("STACKTRACE")
+              Logger.error("#{inspect(System.stacktrace)}")
               reply(conn_name, chan_name, meta, create_error(inspect(e)))
           end
           {:noreply, state}
