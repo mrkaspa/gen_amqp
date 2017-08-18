@@ -131,7 +131,7 @@ defmodule GenAMQP.Conn do
       |> :erlang.integer_to_binary()
       |> Base.encode64()
 
-    {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, "", exclusive: true, auto_delete: true)
+    {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, "", exclusive: true, auto_delete: true, durable: false)
     AMQP.Basic.consume(chan, queue_name, pid_from, no_ack: true)
 
     AMQP.Basic.publish(chan, "", exchange, payload,
@@ -212,7 +212,7 @@ defmodule GenAMQP.Conn do
 
   @spec consume(pid, struct, String.t) :: String.t
   defp consume(pid, chan, exchange) do
-    {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, exchange)
+    {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, exchange, durable: false)
     {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: true)
     queue_name
   end

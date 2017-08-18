@@ -7,7 +7,7 @@ defmodule GenAMQP.ClientTest do
 
   describe "with dynamic conn" do
     test "get a response" do
-      assert Client.call(@dynamic_sup_name, "demo", "") == "ok"
+      assert Client.call(@dynamic_sup_name, "server_demo", "", max_time: 10_000) == "ok"
     end
 
     test "it crashes" do
@@ -17,13 +17,13 @@ defmodule GenAMQP.ClientTest do
     end
 
     test "publish a message" do
-      Client.publish(@dynamic_sup_name, "demo", "")
+      Client.publish(@dynamic_sup_name, "server_demo", "")
     end
   end
 
   describe "with static conn" do
     test "get a response" do
-      assert Client.call_with_conn(@conn_name, "demo", "") == "ok"
+      assert Client.call_with_conn(@conn_name, "server_demo", "") == "ok"
     end
 
     test "it crashes" do
@@ -33,7 +33,7 @@ defmodule GenAMQP.ClientTest do
     end
 
     test "publish a message" do
-      Client.publish_with_conn(@conn_name, "demo", "")
+      Client.publish_with_conn(@conn_name, "server_demo", "")
     end
   end
 end

@@ -1,7 +1,7 @@
 defmodule ServerDemo do
   @moduledoc false
 
-  use GenAMQP.Server, event: "demo", conn_name: Application.get_env(:gen_amqp, :conn_name)
+  use GenAMQP.Server, event: "server_demo", conn_name: Application.get_env(:gen_amqp, :conn_name)
 
   def execute(_) do
     {:reply, "ok"}

@@ -6,11 +6,12 @@ defmodule GenAMQP.Client do
   alias GenAMQP.Conn
 
   @spec call(GenServer.name, String.t, String.t) :: any
-  def call(sup_name, exchange, payload) when is_binary(payload) do
+  def call(sup_name, exchange, payload, opts \\ []) when is_binary(payload) do
+    max_time = Keyword.get(opts, :max_time, 5_000)
     case Supervisor.start_child(sup_name, []) do
       {:ok, pid} ->
         {:ok, correlation_id} = Conn.request(pid, exchange, payload, :default)
-        resp = wait_response(correlation_id)
+        resp = wait_response(correlation_id, max_time)
         :ok = Supervisor.terminate_child(sup_name, pid)
         resp
       _ ->
@@ -19,10 +20,11 @@ defmodule GenAMQP.Client do
   end
 
   @spec call_with_conn(GenServer.name, String.t, String.t) :: any
-  def call_with_conn(conn_name, exchange, payload) when is_binary(payload) do
+  def call_with_conn(conn_name, exchange, payload, opts \\ []) when is_binary(payload) do
+    max_time = Keyword.get(opts, :max_time, 5_000)
     around_chan(conn_name, fn(chan_name) ->
       {:ok, correlation_id} = Conn.request(conn_name, exchange, payload, chan_name)
-      wait_response(correlation_id)
+      wait_response(correlation_id, max_time)
     end)
   end
 
@@ -52,14 +54,14 @@ defmodule GenAMQP.Client do
     resp
   end
 
-  defp wait_response(correlation_id) do
+  defp wait_response(correlation_id, max_time) do
     receive do
       {:basic_deliver, payload, %{correlation_id: ^correlation_id}} ->
         payload
       _ ->
-        wait_response(correlation_id)
+        wait_response(correlation_id, max_time)
     after
-      5_000 ->
+      max_time ->
         {:error, :timeout}
     end
   end
