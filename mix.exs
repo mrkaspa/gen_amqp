@@ -45,12 +45,12 @@ defmodule GenAMQP.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:amqp, "~> 0.2.0-pre.1"},
-      {:poison, "~> 2.0"},
+      {:amqp, "~> 0.2.3"},
       {:uuid, "~> 1.1"},
-      {:dialyxir, "~> 0.4.1", only: :dev},
-      {:credo, github: "rrrene/credo", only: :dev},
+      {:dialyxir, "~> 0.5", only: :dev},
+      {:credo, "~> 0.8", only: :dev},
       {:ex_doc, "~> 0.14.5", only: :dev},
+      {:poison, "~> 3.0", only: :test},
       {:excoveralls, "~> 0.5", only: :test},
       {:gen_debug, "~> 0.1.0", only: :test}
     ]

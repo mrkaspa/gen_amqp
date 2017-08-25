@@ -1,3 +1,13 @@
+defmodule ErrorHandler do
+  def handle(msg) do
+    Poison.encode!(%{
+      status: :error,
+      code: 0,
+      message: msg
+    })
+  end
+end
+
 defmodule ServerDemo do
   @moduledoc false
 

@@ -123,11 +123,8 @@ defmodule GenAMQP.Server do
         end
 
         defp create_error(error) do
-          Poison.encode!(%{
-            status: :error,
-            code: 0,
-            message: error
-          })
+          module = Application.get_env(:gen_amqp, :error_handler)
+          apply(module, :handle, [error])
         end
 
         def terminate(reason, %{conn_pid: conn_pid, conn_created: true} = _state) do
