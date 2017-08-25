@@ -15,6 +15,13 @@ defmodule GenAMQP.Server do
 
       @behaviour GenAMQP.Server.Behaviour
 
+      def handle(data) do
+        Logger.info("Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function")
+        :noreply
+      end
+
+      defoverridable [handle: 1]
+
       # Public API
 
       def start_link() do
@@ -88,7 +95,15 @@ defmodule GenAMQP.Server do
             case apply(@exec_module, :execute, [payload]) do
               {:reply, resp} ->
                 reply(conn_name, chan_name, meta, resp)
-              _ -> nil
+              :noreply -> 
+                nil
+              other ->
+                case apply(@exec_module, :handle, [other]) do
+                  {:reply, resp} ->
+                    reply(conn_name, chan_name, meta, resp)
+                  :noreply -> 
+                    nil
+                end
             end
           catch
             :exit, reason ->
@@ -146,5 +161,6 @@ defmodule GenAMQP.Server do
     """
 
     @callback execute(String.t) :: {:reply, String.t} | :noreply
+    @callback handle(any) :: {:reply, String.t} | :noreply
   end
 end

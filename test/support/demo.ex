@@ -18,6 +18,22 @@ defmodule ServerDemo do
   end
 end
 
+defmodule ServerWithHandleDemo do
+  @moduledoc false
+
+  use GenAMQP.Server, event: "server_handle_demo", conn_name: Application.get_env(:gen_amqp, :conn_name)
+
+  def execute(_) do
+    with {:ok, _} <- {:error, "error"} do
+      {:reply, "ok"}
+    end
+  end
+
+  def handle({:error, cause}) do
+    {:reply, cause}
+  end
+end
+
 defmodule DynamicServerDemo do
   @moduledoc false
 
@@ -55,6 +71,7 @@ defmodule DemoApp do
       supervisor(GenAMQP.ConnSupervisor, [static_sup_name, conn_name], [id: static_sup_name]),
       supervisor(GenAMQP.ConnSupervisor, [dynamic_sup_name], id: dynamic_sup_name),
       supervisor(ServerDemo, []),
+      supervisor(ServerWithHandleDemo, []),
       supervisor(DynamicServerDemo, []),
       supervisor(ServerCrash, []),
     ]

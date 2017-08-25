@@ -21,6 +21,12 @@ defmodule GenAMQP.ClientTest do
     end
   end
 
+  describe "server with handle" do
+    test "get a response" do
+      assert Client.call(@dynamic_sup_name, "server_handle_demo", "", max_time: 10_000) == "error"
+    end
+  end
+
   describe "with static conn" do
     test "get a response" do
       assert Client.call_with_conn(@conn_name, "server_demo", "") == "ok"

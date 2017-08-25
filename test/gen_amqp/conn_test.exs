@@ -50,14 +50,14 @@ defmodule GenAMQP.ConnTest do
     test "should keep the channels after death" do
       # IO.inspect(state(ConnHub))
       chans = state(ConnHub)[:chans]
-      assert Enum.count(chans) == 4
+      assert Enum.count(chans) == 7
       ConnHub
       |> Process.whereis()
       |> Process.exit(:die)
       Process.sleep(1000)
       assert Process.whereis(ConnHub) |> Process.alive?()
       chans = state(ConnHub)[:chans]
-      assert Enum.count(chans) == 4
+      assert Enum.count(chans) == 7
     end
   end
 end
