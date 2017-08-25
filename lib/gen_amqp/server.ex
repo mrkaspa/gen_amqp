@@ -15,6 +15,8 @@ defmodule GenAMQP.Server do
 
       @behaviour GenAMQP.Server.Behaviour
 
+      # Default callbacks implementations
+
       def handle(data) do
         Logger.info("Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function")
         :noreply
@@ -161,6 +163,7 @@ defmodule GenAMQP.Server do
     """
 
     @callback execute(String.t) :: {:reply, String.t} | :noreply
+
     @callback handle(any) :: {:reply, String.t} | :noreply
   end
 end
