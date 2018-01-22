@@ -17,8 +17,8 @@ defmodule GenAMQP.Server do
 
       # Default callbacks implementations
 
-      def handle(data) do
-        Logger.info("Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function")
+       def handle(data) do
+        Logger.warn("Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function")
         :noreply
       end
 
@@ -97,22 +97,24 @@ defmodule GenAMQP.Server do
             case apply(@exec_module, :execute, [payload]) do
               {:reply, resp} ->
                 reply(conn_name, chan_name, meta, resp)
-              :noreply -> 
+              :noreply ->
                 nil
               other ->
                 case apply(@exec_module, :handle, [other]) do
                   {:reply, resp} ->
                     reply(conn_name, chan_name, meta, resp)
-                  :noreply -> 
+                  :noreply ->
                     nil
                 end
             end
           catch
             :exit, reason ->
+              Logger.error("STACKTRACE - EXIT")
+              Logger.error("#{inspect(System.stacktrace)}")
               reply(conn_name, chan_name, meta, create_error(reason))
           rescue
             e ->
-              Logger.error("STACKTRACE")
+              Logger.error("STACKTRACE - RESCUE")
               Logger.error("#{inspect(System.stacktrace)}")
               reply(conn_name, chan_name, meta, create_error(inspect(e)))
           end
