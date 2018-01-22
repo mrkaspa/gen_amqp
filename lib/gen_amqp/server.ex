@@ -112,15 +112,23 @@ defmodule GenAMQP.Server do
               Logger.error("STACKTRACE - EXIT")
               st = inspect(System.stacktrace)
               Logger.error(st)
-              reply(conn_name, chan_name, meta,
-                create_error({reason, st}))
+              case create_error({reason, st}) do
+                {:reply, resp} ->
+                  reply(conn_name, chan_name, meta, resp)
+                :noreply ->
+                  nil
+              end
           rescue
             e ->
               Logger.error("STACKTRACE - RESCUE")
               st = inspect(System.stacktrace)
               Logger.error(st)
-              reply(conn_name, chan_name, meta,
-                create_error({inspect(e), st}))
+              case create_error({inspect(e), st}) do
+                {:reply, resp} ->
+                  reply(conn_name, chan_name, meta, resp)
+                :noreply ->
+                  nil
+              end
           end
           {:noreply, state}
         end
@@ -140,13 +148,15 @@ defmodule GenAMQP.Server do
           Conn.response(conn_name, meta, resp, chan_name)
         end
 
-        defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp) when not is_binary(resp) do
+        defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp) do
           Logger.error("message in wrong type #{inspect(resp)}")
           Conn.response(conn_name, meta, create_error("message in wrong type"), chan_name)
         end
 
         defp create_error(msg) do
           module = Application.get_env(:gen_amqp, :error_handler)
+          sol = apply(module, :handle, [msg])
+          IO.puts "SOL = #{inspect(sol)}"
           apply(module, :handle, [msg])
         end
 
