@@ -110,13 +110,17 @@ defmodule GenAMQP.Server do
           catch
             :exit, reason ->
               Logger.error("STACKTRACE - EXIT")
-              Logger.error("#{inspect(System.stacktrace)}")
-              reply(conn_name, chan_name, meta, create_error(reason))
+              st = inspect(System.stacktrace)
+              Logger.error(st)
+              reply(conn_name, chan_name, meta,
+                create_error({reason, st}))
           rescue
             e ->
               Logger.error("STACKTRACE - RESCUE")
-              Logger.error("#{inspect(System.stacktrace)}")
-              reply(conn_name, chan_name, meta, create_error(inspect(e)))
+              st = inspect(System.stacktrace)
+              Logger.error(st)
+              reply(conn_name, chan_name, meta,
+                create_error({inspect(e), st}))
           end
           {:noreply, state}
         end
@@ -141,9 +145,9 @@ defmodule GenAMQP.Server do
           Conn.response(conn_name, meta, create_error("message in wrong type"), chan_name)
         end
 
-        defp create_error(error) do
+        defp create_error(msg) do
           module = Application.get_env(:gen_amqp, :error_handler)
-          apply(module, :handle, [error])
+          apply(module, :handle, [msg])
         end
 
         def terminate(reason, %{conn_pid: conn_pid, conn_created: true} = _state) do

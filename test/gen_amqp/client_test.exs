@@ -35,7 +35,6 @@ defmodule GenAMQP.ClientTest do
     test "it crashes" do
       resp = Client.call_with_conn(@conn_name, "crash", "")
       data = Poison.decode!(resp)
-      IO.inspect data
       assert data["status"] == "error"
     end
 

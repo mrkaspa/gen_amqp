@@ -48,7 +48,6 @@ defmodule GenAMQP.ConnTest do
 
   describe "with a managed connection" do
     test "should keep the channels after death" do
-      # IO.inspect(state(ConnHub))
       chans = state(ConnHub)[:chans]
       assert Enum.count(chans) == 7
       ConnHub
