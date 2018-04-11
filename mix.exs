@@ -2,16 +2,18 @@ defmodule GenAMQP.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :gen_amqp,
-     version: "2.1.0",
-     elixir: "~> 1.4",
-     description: description(),
-     package: package(),
-     elixirc_paths: elixirc_paths(Mix.env),
-     build_embedded: Mix.env() == :prod,
-     start_permanent: Mix.env() == :prod,
-     deps: deps(),
-     test_coverage: [tool: ExCoveralls]]
+    [
+      app: :gen_amqp,
+      version: "2.2.0",
+      elixir: "~> 1.6",
+      description: description(),
+      package: package(),
+      elixirc_paths: elixirc_paths(Mix.env()),
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls]
+    ]
   end
 
   defp description do
@@ -29,7 +31,7 @@ defmodule GenAMQP.Mixfile do
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [
@@ -40,12 +42,13 @@ defmodule GenAMQP.Mixfile do
       {:ex_doc, "~> 0.14.5", only: :dev},
       {:poison, "~> 3.0", only: :test},
       {:excoveralls, "~> 0.5", only: :test},
-      {:gen_debug, "~> 0.1.0", only: :test}
+      {:gen_debug, "~> 0.2.0", only: :test}
     ]
   end
 
   defp package do
-    [# These are the default files included in the package
+    # These are the default files included in the package
+    [
       name: :gen_amqp,
       files: ["lib", "mix.exs", "README*"],
       maintainers: ["Michel Perez"],
