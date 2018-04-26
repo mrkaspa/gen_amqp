@@ -17,12 +17,15 @@ defmodule GenAMQP.Server do
 
       # Default callbacks implementations
 
-       def handle(data) do
-        Logger.warn("Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function")
+      def handle(data) do
+        Logger.warn(
+          "Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function"
+        )
+
         :noreply
       end
 
-      defoverridable [handle: 1]
+      defoverridable handle: 1
 
       # Public API
 
@@ -32,7 +35,7 @@ defmodule GenAMQP.Server do
 
       def init(_) do
         children =
-          Enum.map(1..unquote(size), fn(num) ->
+          Enum.map(1..unquote(size), fn num ->
             id = :"#{__MODULE__.Worker}_#{num}"
             worker(__MODULE__.Worker, [id], id: id, restart: :transient, shutdown: 1)
           end)
@@ -46,14 +49,14 @@ defmodule GenAMQP.Server do
         alias GenAMQP.Conn
 
         @exec_module __MODULE__
-          |> Atom.to_string
-          |> String.split(".")
-          |> (fn(enum) ->
-            size = length(enum)
-            List.delete_at(enum, size - 1)
-          end).()
-          |> Enum.join(".")
-          |> String.to_atom
+                     |> Atom.to_string()
+                     |> String.split(".")
+                     |> (fn enum ->
+                           size = length(enum)
+                           List.delete_at(enum, size - 1)
+                         end).()
+                     |> Enum.join(".")
+                     |> String.to_atom()
 
         def start_link(name) do
           GenServer.start_link(__MODULE__, [name], name: name)
@@ -70,8 +73,15 @@ defmodule GenAMQP.Server do
 
           :ok = Conn.create_chan(conn_name, chan_name)
           :ok = Conn.subscribe(conn_name, unquote(event), chan_name)
-          {:ok, %{consumer_tag: nil, conn_name: conn_name, conn_pid: conn_pid,
-          chan_name: chan_name, conn_created: conn_created}}
+
+          {:ok,
+           %{
+             consumer_tag: nil,
+             conn_name: conn_name,
+             conn_pid: conn_pid,
+             chan_name: chan_name,
+             conn_created: conn_created
+           }}
         end
 
         defp start_conn(server_name, nil) do
@@ -92,44 +102,55 @@ defmodule GenAMQP.Server do
           {:noreply, state}
         end
 
-        def handle_info({:basic_deliver, payload, meta}, %{conn_name: conn_name, chan_name: chan_name} = state) do
+        def handle_info(
+              {:basic_deliver, payload, meta},
+              %{conn_name: conn_name, chan_name: chan_name} = state
+            ) do
           try do
             case apply(@exec_module, :execute, [payload]) do
               {:reply, resp} ->
                 reply(conn_name, chan_name, meta, resp)
+
               :noreply ->
                 nil
+
               other ->
                 case apply(@exec_module, :handle, [other]) do
                   {:reply, resp} ->
                     reply(conn_name, chan_name, meta, resp)
+
                   :noreply ->
                     nil
                 end
             end
-          catch
-            :exit, reason ->
-              Logger.error("STACKTRACE - EXIT")
-              st = inspect(System.stacktrace)
-              Logger.error(st)
-              case create_error({reason, st}) do
-                {:reply, resp} ->
-                  reply(conn_name, chan_name, meta, resp)
-                :noreply ->
-                  nil
-              end
           rescue
             e ->
               Logger.error("STACKTRACE - RESCUE")
-              st = inspect(System.stacktrace)
+              st = inspect(System.stacktrace())
               Logger.error(st)
+
               case create_error({inspect(e), st}) do
                 {:reply, resp} ->
                   reply(conn_name, chan_name, meta, resp)
+
+                :noreply ->
+                  nil
+              end
+          catch
+            :exit, reason ->
+              Logger.error("STACKTRACE - EXIT")
+              st = inspect(System.stacktrace())
+              Logger.error(st)
+
+              case create_error({reason, st}) do
+                {:reply, resp} ->
+                  reply(conn_name, chan_name, meta, resp)
+
                 :noreply ->
                   nil
               end
           end
+
           {:noreply, state}
         end
 
@@ -142,9 +163,16 @@ defmodule GenAMQP.Server do
           {:stop, reason, data}
         end
 
-        defp reply(_conn_name, _chan_name, %{reply_to: :undefined, correlation_id: :undefined} = meta, resp), do: nil
+        defp reply(
+               _conn_name,
+               _chan_name,
+               %{reply_to: :undefined, correlation_id: :undefined} = meta,
+               resp
+             ),
+             do: nil
 
-        defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp) when is_binary(resp) do
+        defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp)
+             when is_binary(resp) do
           Conn.response(conn_name, meta, resp, chan_name)
         end
 
@@ -156,7 +184,7 @@ defmodule GenAMQP.Server do
         defp create_error(msg) do
           module = Application.get_env(:gen_amqp, :error_handler)
           sol = apply(module, :handle, [msg])
-          IO.puts "SOL = #{inspect(sol)}"
+          IO.puts("SOL = #{inspect(sol)}")
           apply(module, :handle, [msg])
         end
 
@@ -165,9 +193,15 @@ defmodule GenAMQP.Server do
           Logger.error("Terminate connection in #{__MODULE__}, reason: #{inspect(reason)}")
         end
 
-        def terminate(reason, %{conn_name: conn_name, chan_name: chan_name, conn_created: false} = _state) do
+        def terminate(
+              reason,
+              %{conn_name: conn_name, chan_name: chan_name, conn_created: false} = _state
+            ) do
           :ok = Conn.close_chan(conn_name, chan_name)
-          Logger.error("Terminate channel #{chan_name} in #{__MODULE__}, reason: #{inspect(reason)}")
+
+          Logger.error(
+            "Terminate channel #{chan_name} in #{__MODULE__}, reason: #{inspect(reason)}"
+          )
         end
       end
     end
@@ -178,8 +212,8 @@ defmodule GenAMQP.Server do
     Behaviour to implement by the servers
     """
 
-    @callback execute(String.t) :: {:reply, String.t} | :noreply
+    @callback execute(String.t()) :: {:reply, String.t()} | :noreply
 
-    @callback handle(any) :: {:reply, String.t} | :noreply
+    @callback handle(any) :: {:reply, String.t()} | :noreply
   end
 end

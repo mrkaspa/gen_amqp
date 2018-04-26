@@ -23,7 +23,7 @@ defmodule GenAMQP.ClientTest do
 
   describe "server with handle" do
     test "get a response" do
-      resp = Client.call(@dynamic_sup_name, "server_handle_demo", "", max_time: 10_000) == "error"
+      assert Client.call(@dynamic_sup_name, "server_handle_demo", "", max_time: 10_000) == "error"
     end
   end
 
@@ -35,7 +35,7 @@ defmodule GenAMQP.ClientTest do
     test "it crashes" do
       resp = Client.call_with_conn(@conn_name, "crash", "")
       data = Poison.decode!(resp)
-        assert data["status"] == "error"
+      assert data["status"] == "error"
     end
 
     test "publish a message" do
