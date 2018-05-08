@@ -41,8 +41,8 @@ defmodule GenAMQP.Conn do
   Publish a message in an asynchronous way
   """
   @spec publish(GenServer.name(), String.t(), String.t(), atom) :: any
-  def publish(name, exchange, payload, chan_name) do
-    GenServer.call(name, {:publish, exchange, payload, chan_name})
+  def publish(name, exchange, payload, chan_name, opts \\ []) do
+    GenServer.call(name, {:publish, exchange, payload, chan_name, opts})
   end
 
   @doc """
@@ -96,7 +96,6 @@ defmodule GenAMQP.Conn do
     Logger.info("restarting #{inspect(connected)}")
 
     for gen_name <- connected, gen_name != :default do
-      IO.puts("gen #{gen_name}")
       GenServer.cast(gen_name, :reconnect)
     end
   end
@@ -113,15 +112,25 @@ defmodule GenAMQP.Conn do
     {:reply, :ok, new_state}
   end
 
-  def handle_call({:publish, exchange, payload, chan_name}, _from, %{chans: chans} = state) do
+  def handle_call({:publish, exchange, payload, chan_name, opts}, _from, %{chans: chans} = state) do
     chan = chans[chan_name]
-    AMQP.Basic.publish(chan, "", exchange, payload)
+    app_id = Keyword.get(opts, :app_id, "")
+
+    AMQP.Basic.publish(chan, "", exchange, payload, app_id: app_id)
     {:reply, :ok, state}
   end
 
   def handle_call({:response, meta, payload, chan_name}, _from, %{chans: chans} = state) do
     chan = chans[chan_name]
-    AMQP.Basic.publish(chan, "", meta.reply_to, payload, correlation_id: meta.correlation_id)
+
+    AMQP.Basic.publish(
+      chan,
+      "",
+      meta.reply_to,
+      payload,
+      correlation_id: meta.correlation_id
+    )
+
     {:reply, :ok, state}
   end
 
@@ -131,7 +140,7 @@ defmodule GenAMQP.Conn do
         %{chans: chans} = state
       ) do
     chan = chans[chan_name]
-    app_id = Keyword.get(opts, :app_id, "v1.0")
+    app_id = Keyword.get(opts, :app_id, "")
 
     correlation_id =
       :erlang.unique_integer()

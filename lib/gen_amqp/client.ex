@@ -11,7 +11,7 @@ defmodule GenAMQP.Client do
 
     case Supervisor.start_child(sup_name, []) do
       {:ok, pid} ->
-        {:ok, correlation_id} = Conn.request(pid, exchange, payload, :default)
+        {:ok, correlation_id} = Conn.request(pid, exchange, payload, :default, opts)
         resp = wait_response(correlation_id, max_time)
         :ok = Supervisor.terminate_child(sup_name, pid)
         resp
@@ -32,10 +32,10 @@ defmodule GenAMQP.Client do
   end
 
   @spec publish(GenServer.name(), String.t(), String.t()) :: any
-  def publish(sup_name, exchange, payload) when is_binary(payload) do
+  def publish(sup_name, exchange, payload, opts \\ []) when is_binary(payload) do
     case Supervisor.start_child(sup_name, []) do
       {:ok, pid} ->
-        Conn.publish(pid, exchange, payload, :default)
+        Conn.publish(pid, exchange, payload, :default, opts)
         :ok = Supervisor.terminate_child(sup_name, pid)
 
       _ ->
@@ -44,9 +44,9 @@ defmodule GenAMQP.Client do
   end
 
   @spec publish_with_conn(GenServer.name(), String.t(), String.t()) :: any
-  def publish_with_conn(conn_name, exchange, payload) when is_binary(payload) do
+  def publish_with_conn(conn_name, exchange, payload, opts \\ []) when is_binary(payload) do
     around_chan(conn_name, fn chan_name ->
-      Conn.publish(conn_name, exchange, payload, chan_name)
+      Conn.publish(conn_name, exchange, payload, chan_name, opts)
     end)
   end
 

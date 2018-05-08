@@ -51,5 +51,9 @@ defmodule GenAMQP.ClientTest do
                app_id: "v1.0"
              ) == "ok"
     end
+
+    test "publish a message with app_id option" do
+      Client.publish_with_conn(@conn_name, "server_demo", "", app_id: "v1.0")
+    end
   end
 end
