@@ -114,9 +114,8 @@ defmodule GenAMQP.Conn do
 
   def handle_call({:publish, exchange, payload, chan_name, opts}, _from, %{chans: chans} = state) do
     chan = chans[chan_name]
-    app_id = Keyword.get(opts, :app_id, "")
 
-    AMQP.Basic.publish(chan, "", exchange, payload, app_id: app_id)
+    AMQP.Basic.publish(chan, "", exchange, payload, opts)
     {:reply, :ok, state}
   end
 
@@ -140,7 +139,6 @@ defmodule GenAMQP.Conn do
         %{chans: chans} = state
       ) do
     chan = chans[chan_name]
-    app_id = Keyword.get(opts, :app_id, "")
 
     correlation_id =
       :erlang.unique_integer()
@@ -157,9 +155,10 @@ defmodule GenAMQP.Conn do
       "",
       exchange,
       payload,
-      reply_to: queue_name,
-      correlation_id: correlation_id,
-      app_id: app_id
+      Keyword.merge(
+        [reply_to: queue_name, correlation_id: correlation_id],
+        opts
+      )
     )
 
     {:reply, {:ok, correlation_id}, state}
