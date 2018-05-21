@@ -63,7 +63,6 @@ defmodule GenAMQP.Server do
         end
 
         def init([name]) do
-          Process.flag(:trap_exit, true)
           Logger.info("Starting #{name}")
 
           chan_name = name
@@ -156,11 +155,6 @@ defmodule GenAMQP.Server do
 
         def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, state) do
           {:noreply, %{state | consumer_tag: consumer_tag}}
-        end
-
-        def handle_info({:EXIT, _pid, reason}, data) do
-          Logger.info("Exited #{__MODULE__}, reason: #{inspect(reason)}")
-          {:stop, reason, data}
         end
 
         defp reply(

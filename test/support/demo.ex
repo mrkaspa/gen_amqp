@@ -1,11 +1,12 @@
 defmodule ErrorHandler do
-  def handle({msg, st}) do
+  def handle({msg, _stacktrace}) do
     resp =
       Poison.encode!(%{
         status: :error,
         code: 0,
         message: msg
       })
+
     {:reply, resp}
   end
 end
@@ -23,7 +24,9 @@ end
 defmodule ServerWithHandleDemo do
   @moduledoc false
 
-  use GenAMQP.Server, event: "server_handle_demo", conn_name: Application.get_env(:gen_amqp, :conn_name)
+  use GenAMQP.Server,
+    event: "server_handle_demo",
+    conn_name: Application.get_env(:gen_amqp, :conn_name)
 
   def execute(_) do
     with {:ok, _} <- {:error, "error"} do
@@ -39,7 +42,9 @@ end
 defmodule DynamicServerDemo do
   @moduledoc false
 
-  use GenAMQP.Server, event: "dyna", conn_supervisor: Application.get_env(:gen_amqp, :dynamic_sup_name)
+  use GenAMQP.Server,
+    event: "dyna",
+    conn_supervisor: Application.get_env(:gen_amqp, :dynamic_sup_name)
 
   def execute(_) do
     {:reply, "ok"}
@@ -49,7 +54,9 @@ end
 defmodule ServerCrash do
   @moduledoc false
 
-  use GenAMQP.Server, event: "crash", conn_supervisor: Application.get_env(:gen_amqp, :dynamic_sup_name)
+  use GenAMQP.Server,
+    event: "crash",
+    conn_supervisor: Application.get_env(:gen_amqp, :dynamic_sup_name)
 
   def execute(_) do
     raise "error"
@@ -70,12 +77,12 @@ defmodule DemoApp do
 
     # Define supervisors and child supervisors to be supervised
     children = [
-      supervisor(GenAMQP.ConnSupervisor, [static_sup_name, conn_name], [id: static_sup_name]),
+      supervisor(GenAMQP.ConnSupervisor, [static_sup_name, conn_name], id: static_sup_name),
       supervisor(GenAMQP.ConnSupervisor, [dynamic_sup_name], id: dynamic_sup_name),
       supervisor(ServerDemo, []),
       supervisor(ServerWithHandleDemo, []),
       supervisor(DynamicServerDemo, []),
-      supervisor(ServerCrash, []),
+      supervisor(ServerCrash, [])
     ]
 
     opts = [strategy: :one_for_one, name: Core.Supervisor]
