@@ -51,7 +51,7 @@ defmodule GenAMQP.Client do
   end
 
   defp around_chan(conn_name, execute) do
-    chan_name = String.to_atom(UUID.uuid4())
+    chan_name = :rpc_queue
     :ok = Conn.create_chan(conn_name, chan_name)
     resp = execute.(chan_name)
     :ok = Conn.close_chan(conn_name, chan_name)
