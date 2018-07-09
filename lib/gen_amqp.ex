@@ -49,33 +49,6 @@ defmodule GenAMQP do
 
   In the systems there is a supervisor for the connection that can be dynamic or static, if it's static supervises one connection, if it's dynamic creates a new supervised connection for each client
 
-  ```elixir
-      defmodule DemoApp do
-        @moduledoc false
-
-        use Application
-
-        def start(_type, _args) do
-          import Supervisor.Spec, warn: false
-
-          conn_name = Application.get_env(:gen_amqp, :conn_name)
-          static_sup_name = Application.get_env(:gen_amqp, :static_sup_name)
-          dynamic_sup_name = Application.get_env(:gen_amqp, :dynamic_sup_name)
-
-          # Define supervisors and child supervisors to be supervised
-          children = [
-            supervisor(GenAMQP.ConnSupervisor, [static_sup_name, conn_name], [id: static_sup_name]),
-            supervisor(GenAMQP.ConnSupervisor, [dynamic_sup_name], id: dynamic_sup_name),
-            supervisor(ServerDemo, []),
-          ]
-
-          opts = [strategy: :one_for_one, name: Core.Supervisor]
-          Supervisor.start_link(children, opts)
-        end
-      end
-  ```
-
-
   """
 
   use Application
