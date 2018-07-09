@@ -3,9 +3,18 @@ defmodule GenAMQP.ConnTest do
   alias GenAMQP.Conn
   use GenDebug
 
-  setup do
+  setup_all do
+    {:ok, counter_pid} = Agent.start(fn -> 0 end)
+    {:ok, counter: counter_pid}
+  end
+
+  setup %{counter: counter_pid} do
+    counter_name =
+      "test_#{Agent.get_and_update(counter_pid, fn state -> {state, state + 1} end)}"
+      |> String.to_atom()
+
     {:ok, pid} =
-      Conn.start_link(System.get_env("RABBITCONN") || "amqp://guest:guest@localhost", :test)
+      Conn.start_link(System.get_env("RABBITCONN") || "amqp://guest:guest@localhost", counter_name)
 
     {:ok, pid: pid}
   end

@@ -8,12 +8,13 @@ defmodule GenAMQP.Client do
   @spec call(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
   def call(sup_name, exchange, payload, opts \\ []) when is_binary(payload) do
     max_time = Keyword.get(opts, :max_time, 5_000)
+    spec = {GenAMQP.Conn, nil}
 
-    case Supervisor.start_child(sup_name, []) do
+    case DynamicSupervisor.start_child(sup_name, spec) do
       {:ok, pid} ->
         {:ok, correlation_id} = Conn.request(pid, exchange, payload, :default, opts)
         resp = wait_response(correlation_id, max_time)
-        :ok = Supervisor.terminate_child(sup_name, pid)
+        :ok = DynamicSupervisor.terminate_child(sup_name, pid)
         resp
 
       _ ->
@@ -30,10 +31,12 @@ defmodule GenAMQP.Client do
 
   @spec publish(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
   def publish(sup_name, exchange, payload, opts \\ []) when is_binary(payload) do
-    case Supervisor.start_child(sup_name, []) do
+    spec = {GenAMQP.Conn, nil}
+
+    case DynamicSupervisor.start_child(sup_name, spec) do
       {:ok, pid} ->
         Conn.publish(pid, exchange, payload, :default, opts)
-        :ok = Supervisor.terminate_child(sup_name, pid)
+        :ok = DynamicSupervisor.terminate_child(sup_name, pid)
 
       _ ->
         {:error, :amqp_conn}
