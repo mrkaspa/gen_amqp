@@ -6,10 +6,10 @@ defmodule GenAMQP do
 
   ```elixir
       config :gen_amqp,
-        amqp_url: "amqp://guest:guest@localhost",
-        conn_name: ConnHub,
-        static_sup_name: StaticConnSup,
-        dynamic_sup_name: DynamicConnSup,
+        connections: [
+          {:static, StaticConnSup, ConnHub, "amqp://guest:guest@localhost"},
+          {:dynamic, DynamicConnSup, "amqp://guest:guest@localhost"}
+        ],
         error_handler: ErrorHandler
   ```
 
@@ -81,20 +81,25 @@ defmodule GenAMQP do
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
-    conn_name = Application.get_env(:gen_amqp, :conn_name)
-    static_sup_name = Application.get_env(:gen_amqp, :static_sup_name)
-    dynamic_sup_name = Application.get_env(:gen_amqp, :dynamic_sup_name)
-
-    sup_name = static_sup_name || dynamic_sup_name
+    conns = Application.get_env(:gen_amqp, :connections)
+    specs = conns_to_specs(conns)
 
     # Define supervisors and child supervisors to be supervised
-    children = [
-      supervisor(GenAMQP.ConnSupervisor, [sup_name, conn_name]),
-    ]
+    children = specs
 
     opts = [strategy: :one_for_one, name: GenAMQP.AppSupervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp conns_to_specs(conns) do
+    import Supervisor.Spec, warn: false
+
+    Enum.map(conns, fn
+      {:static, sup_name, conn_name, conn_url} ->
+        supervisor(GenAMQP.ConnSupervisor, [sup_name, conn_name, conn_url], id: sup_name)
+
+      {:dynamic, sup_name, conn_url} ->
+        supervisor(GenAMQP.ConnSupervisor, [sup_name, nil, conn_url], id: sup_name)
+    end)
   end
 end

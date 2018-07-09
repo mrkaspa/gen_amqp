@@ -2,8 +2,8 @@ defmodule GenAMQP.ClientTest do
   use ExUnit.Case
   alias GenAMQP.Client
 
-  @conn_name Application.get_env(:gen_amqp, :conn_name)
-  @dynamic_sup_name Application.get_env(:gen_amqp, :dynamic_sup_name)
+  @conn_name ConnHub
+  @dynamic_sup_name DynamicConnSup
 
   describe "with dynamic conn" do
     test "get a response" do

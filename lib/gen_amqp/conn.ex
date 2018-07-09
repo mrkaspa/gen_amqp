@@ -11,14 +11,10 @@ defmodule GenAMQP.Conn do
   @doc """
   Starts the connection
   """
-  @spec start_link() :: GenServer.on_start()
-  def start_link() do
-    GenServer.start_link(__MODULE__, [nil])
-  end
-
-  @spec start_link(GenServer.name()) :: GenServer.on_start()
-  def start_link(name) do
-    GenServer.start_link(__MODULE__, [name], name: name)
+  # @spec start_link(binary(), GenServer.name()) :: GenServer.on_start()
+  def start_link(conn_url, name) do
+    Logger.info("Crearing conn with name: #{name} and url #{conn_url}")
+    GenServer.start_link(__MODULE__, [name, conn_url], name: name)
   end
 
   @doc """
@@ -76,16 +72,17 @@ defmodule GenAMQP.Conn do
 
   # Private API
 
-  def init([name]) do
+  def init([name, amqp_url]) do
     Logger.info("Starting connection")
     Process.flag(:trap_exit, true)
-    amqp_url = Application.get_env(:gen_amqp, :amqp_url)
     {:ok, conn} = AMQP.Connection.open(amqp_url)
     {:ok, chan} = AMQP.Channel.open(conn)
 
-    case :ets.lookup(:conns, name) do
-      [{_, connected}] -> reconnect(connected)
-      _ -> :ok
+    if name != nil do
+      case :ets.lookup(:conns, name) do
+        [{_, connected}] -> reconnect(connected)
+        _ -> :ok
+      end
     end
 
     {:ok,

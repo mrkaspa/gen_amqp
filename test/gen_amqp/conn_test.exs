@@ -4,7 +4,9 @@ defmodule GenAMQP.ConnTest do
   use GenDebug
 
   setup do
-    {:ok, pid} = Conn.start_link()
+    {:ok, pid} =
+      Conn.start_link(System.get_env("RABBITCONN") || "amqp://guest:guest@localhost", :test)
+
     {:ok, pid: pid}
   end
 
@@ -50,9 +52,11 @@ defmodule GenAMQP.ConnTest do
     test "should keep the channels after death" do
       chans = state(ConnHub)[:chans]
       assert Enum.count(chans) == 7
+
       ConnHub
       |> Process.whereis()
       |> Process.exit(:die)
+
       Process.sleep(1000)
       assert Process.whereis(ConnHub) |> Process.alive?()
       chans = state(ConnHub)[:chans]

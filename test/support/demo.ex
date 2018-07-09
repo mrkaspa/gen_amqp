@@ -14,7 +14,7 @@ end
 defmodule ServerDemo do
   @moduledoc false
 
-  use GenAMQP.Server, event: "server_demo", conn_name: Application.get_env(:gen_amqp, :conn_name)
+  use GenAMQP.Server, event: "server_demo", conn_name: ConnHub
 
   def execute(_) do
     {:reply, "ok"}
@@ -26,7 +26,7 @@ defmodule ServerWithHandleDemo do
 
   use GenAMQP.Server,
     event: "server_handle_demo",
-    conn_name: Application.get_env(:gen_amqp, :conn_name)
+    conn_name: ConnHub
 
   def execute(_) do
     with {:ok, _} <- {:error, "error"} do
@@ -44,7 +44,7 @@ defmodule DynamicServerDemo do
 
   use GenAMQP.Server,
     event: "dyna",
-    conn_supervisor: Application.get_env(:gen_amqp, :dynamic_sup_name)
+    conn_supervisor: DynamicConnSup
 
   def execute(_) do
     {:reply, "ok"}
@@ -56,7 +56,7 @@ defmodule ServerCrash do
 
   use GenAMQP.Server,
     event: "crash",
-    conn_supervisor: Application.get_env(:gen_amqp, :dynamic_sup_name)
+    conn_supervisor: DynamicConnSup
 
   def execute(_) do
     raise "error"
@@ -67,25 +67,33 @@ defmodule DemoApp do
   @moduledoc false
 
   use Application
+  import Supervisor.Spec, warn: false
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
-    conn_name = Application.get_env(:gen_amqp, :conn_name)
-    static_sup_name = Application.get_env(:gen_amqp, :static_sup_name)
-    dynamic_sup_name = Application.get_env(:gen_amqp, :dynamic_sup_name)
+    conns = Application.get_env(:gen_amqp, :connections)
+    specs = conns_to_specs(conns)
 
     # Define supervisors and child supervisors to be supervised
-    children = [
-      supervisor(GenAMQP.ConnSupervisor, [static_sup_name, conn_name], id: static_sup_name),
-      supervisor(GenAMQP.ConnSupervisor, [dynamic_sup_name], id: dynamic_sup_name),
-      supervisor(ServerDemo, []),
-      supervisor(ServerWithHandleDemo, []),
-      supervisor(DynamicServerDemo, []),
-      supervisor(ServerCrash, [])
-    ]
+    children =
+      specs ++
+        [
+          supervisor(ServerDemo, []),
+          supervisor(ServerWithHandleDemo, []),
+          supervisor(DynamicServerDemo, []),
+          supervisor(ServerCrash, [])
+        ]
 
-    opts = [strategy: :one_for_one, name: Core.Supervisor]
+    opts = [strategy: :one_for_one, name: GenAMQP.AppSupervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp conns_to_specs(conns) do
+    Enum.map(conns, fn
+      {:static, sup_name, conn_name, conn_url} ->
+        supervisor(GenAMQP.ConnSupervisor, [sup_name, conn_name, conn_url], id: sup_name)
+
+      {:dynamic, sup_name, conn_url} ->
+        supervisor(GenAMQP.ConnSupervisor, [sup_name, nil, conn_url], id: sup_name)
+    end)
   end
 end

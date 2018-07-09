@@ -85,7 +85,8 @@ defmodule GenAMQP.Server do
 
         defp start_conn(server_name, nil) do
           conn_name = String.to_atom("#{server_name}.Conn")
-          {:ok, conn_pid} = Supervisor.start_child(unquote(dynamic_sup_name), [conn_name])
+          spec = {GenAMQP.Conn, conn_name}
+          {:ok, conn_pid} = DynamicSupervisor.start_child(unquote(dynamic_sup_name), spec)
           {conn_name, conn_pid, true}
         end
 
