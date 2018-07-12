@@ -14,7 +14,10 @@ defmodule GenAMQP.ConnTest do
       |> String.to_atom()
 
     {:ok, pid} =
-      Conn.start_link(System.get_env("RABBITCONN") || "amqp://guest:guest@localhost", counter_name)
+      Conn.start_link(
+        System.get_env("RABBITCONN") || "amqp://guest:guest@localhost",
+        counter_name
+      )
 
     {:ok, pid: pid}
   end
@@ -60,7 +63,7 @@ defmodule GenAMQP.ConnTest do
   describe "with a managed connection" do
     test "should keep the channels after death" do
       chans = state(ConnHub)[:chans]
-      assert Enum.count(chans) == 7
+      assert Enum.count(chans) == 10
 
       ConnHub
       |> Process.whereis()
@@ -69,7 +72,7 @@ defmodule GenAMQP.ConnTest do
       Process.sleep(1000)
       assert Process.whereis(ConnHub) |> Process.alive?()
       chans = state(ConnHub)[:chans]
-      assert Enum.count(chans) == 7
+      assert Enum.count(chans) == 10
     end
   end
 end

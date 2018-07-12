@@ -56,4 +56,13 @@ defmodule GenAMQP.ClientTest do
       Client.publish_with_conn(@conn_name, "server_demo", "", app_id: "v1.0")
     end
   end
+
+  describe "with before and after" do
+    test "calls the server" do
+      Agent.start(fn -> 0 end, name: Agt)
+      assert Client.call_with_conn(@conn_name, "server_callback_demo", "", app_id: "v1.0") == "ok"
+      assert Agent.get(Agt, & &1) == 2
+      Agent.stop(Agt)
+    end
+  end
 end

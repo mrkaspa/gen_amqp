@@ -21,6 +21,28 @@ defmodule ServerDemo do
   end
 end
 
+defmodule ServerWithCallbacks do
+  @moduledoc false
+
+  use GenAMQP.Server,
+    event: "server_callback_demo",
+    conn_name: ConnHub,
+    before: [
+      fn _event ->
+        Agent.update(Agt, fn n -> n + 1 end)
+      end
+    ],
+    after: [
+      fn _event ->
+        Agent.update(Agt, fn n -> n + 1 end)
+      end
+    ]
+
+  def execute(_) do
+    {:reply, "ok"}
+  end
+end
+
 defmodule ServerWithHandleDemo do
   @moduledoc false
 
@@ -79,6 +101,7 @@ defmodule DemoApp do
         [
           supervisor(ServerDemo, []),
           supervisor(ServerWithHandleDemo, []),
+          supervisor(ServerWithCallbacks, []),
           supervisor(DynamicServerDemo, []),
           supervisor(ServerCrash, [])
         ]

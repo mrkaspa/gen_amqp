@@ -8,6 +8,8 @@ defmodule GenAMQP.Server do
     size = Keyword.get(opts, :size, 3)
     conn_name = Keyword.get(opts, :conn_name, nil)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
+    before_funcs = Keyword.get(opts, :before, [])
+    after_funcs = Keyword.get(opts, :after, [])
 
     quote do
       require Logger
@@ -106,6 +108,10 @@ defmodule GenAMQP.Server do
               {:basic_deliver, payload, meta},
               %{conn_name: conn_name, chan_name: chan_name} = state
             ) do
+          for f <- unquote(before_funcs) do
+            f.(unquote(event))
+          end
+
           try do
             case apply(@exec_module, :execute, [payload]) do
               {:reply, resp} ->
@@ -149,6 +155,10 @@ defmodule GenAMQP.Server do
                 :noreply ->
                   nil
               end
+          end
+
+          for f <- unquote(after_funcs) do
+            f.(unquote(event))
           end
 
           {:noreply, state}
