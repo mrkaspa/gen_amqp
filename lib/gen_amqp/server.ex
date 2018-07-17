@@ -97,6 +97,62 @@ defmodule GenAMQP.Server do
           {conn_name, conn_pid, false}
         end
 
+        def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
+          payload = reduce_with_funcs(unquote(before_funcs), unquote(event), payload)
+
+          {reply?, resp} =
+            try do
+              case apply(@exec_module, :execute, [payload]) do
+                {:reply, resp} ->
+                  {true, resp}
+
+                :noreply ->
+                  {false, nil}
+
+                other ->
+                  case apply(@exec_module, :handle, [other]) do
+                    {:reply, resp} ->
+                      {true, resp}
+
+                    :noreply ->
+                      {false, nil}
+                  end
+              end
+            rescue
+              e ->
+                Logger.error("STACKTRACE - RESCUE")
+                st = inspect(System.stacktrace())
+                Logger.error(st)
+
+                case create_error({inspect(e), st}) do
+                  {:reply, resp} ->
+                    {true, resp}
+
+                  :noreply ->
+                    {false, nil}
+                end
+            catch
+              :exit, reason ->
+                Logger.error("STACKTRACE - EXIT")
+                st = inspect(System.stacktrace())
+                Logger.error(st)
+
+                case create_error({reason, st}) do
+                  {:reply, resp} ->
+                    {true, resp}
+
+                  :noreply ->
+                    {false, nil}
+                end
+            end
+
+          resp = reduce_with_funcs(unquote(after_funcs), unquote(event), resp)
+
+          if reply? do
+            reply(conn_name, chan_name, meta, resp)
+          end
+        end
+
         def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do
           Logger.info("Server #{chan_name} reconnecting to #{conn_name}")
           :ok = Conn.create_chan(conn_name, chan_name)
@@ -104,63 +160,8 @@ defmodule GenAMQP.Server do
           {:noreply, state}
         end
 
-        def handle_info(
-              {:basic_deliver, payload, meta},
-              %{conn_name: conn_name, chan_name: chan_name} = state
-            ) do
-          for f <- unquote(before_funcs) do
-            f.(unquote(event))
-          end
-
-          try do
-            case apply(@exec_module, :execute, [payload]) do
-              {:reply, resp} ->
-                reply(conn_name, chan_name, meta, resp)
-
-              :noreply ->
-                nil
-
-              other ->
-                case apply(@exec_module, :handle, [other]) do
-                  {:reply, resp} ->
-                    reply(conn_name, chan_name, meta, resp)
-
-                  :noreply ->
-                    nil
-                end
-            end
-          rescue
-            e ->
-              Logger.error("STACKTRACE - RESCUE")
-              st = inspect(System.stacktrace())
-              Logger.error(st)
-
-              case create_error({inspect(e), st}) do
-                {:reply, resp} ->
-                  reply(conn_name, chan_name, meta, resp)
-
-                :noreply ->
-                  nil
-              end
-          catch
-            :exit, reason ->
-              Logger.error("STACKTRACE - EXIT")
-              st = inspect(System.stacktrace())
-              Logger.error(st)
-
-              case create_error({reason, st}) do
-                {:reply, resp} ->
-                  reply(conn_name, chan_name, meta, resp)
-
-                :noreply ->
-                  nil
-              end
-          end
-
-          for f <- unquote(after_funcs) do
-            f.(unquote(event))
-          end
-
+        def handle_info({:basic_deliver, payload, meta}, state) do
+          on_message(payload, meta, state)
           {:noreply, state}
         end
 
