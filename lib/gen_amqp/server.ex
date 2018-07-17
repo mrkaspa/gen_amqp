@@ -46,6 +46,10 @@ defmodule GenAMQP.Server do
         supervise(children, strategy: :one_for_one)
       end
 
+      def reply(msg), do: {:reply, msg}
+
+      def noreply(), do: :noreply
+
       defmodule Worker do
         use GenServer
         alias GenAMQP.Conn
@@ -102,10 +106,6 @@ defmodule GenAMQP.Server do
             f.(event, acc)
           end)
         end
-
-        def reply(msg), do: {:reply, msg}
-
-        def noreply(), do: :noreply
 
         def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
           payload = reduce_with_funcs(unquote(before_funcs), unquote(event), payload)
