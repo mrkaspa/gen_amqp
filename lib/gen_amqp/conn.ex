@@ -21,7 +21,7 @@ defmodule GenAMQP.Conn do
   Creates a new channel
   """
   @spec create_chan(GenServer.name(), atom) :: any
-  def create_chan(name, chan_name) when is_atom(chan_name) do
+  def create_chan(name, chan_name) do
     GenServer.call(name, {:create_chan, chan_name})
   end
 
@@ -29,7 +29,7 @@ defmodule GenAMQP.Conn do
   Closes a channel
   """
   @spec close_chan(GenServer.name(), atom) :: any
-  def close_chan(name, chan_name) when is_atom(chan_name) do
+  def close_chan(name, chan_name) do
     GenServer.call(name, {:close_chan, chan_name})
   end
 

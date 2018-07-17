@@ -25,8 +25,11 @@ defmodule GenAMQP.Client do
   @spec call_with_conn(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
   def call_with_conn(conn_name, exchange, payload, opts \\ []) when is_binary(payload) do
     max_time = Keyword.get(opts, :max_time, 5_000)
-    {:ok, correlation_id} = Conn.request(conn_name, exchange, payload, :default, opts)
-    wait_response(correlation_id, max_time)
+
+    around_chan(conn_name, fn chan_name ->
+      {:ok, correlation_id} = Conn.request(conn_name, exchange, payload, chan_name)
+      wait_response(correlation_id, max_time)
+    end)
   end
 
   @spec publish(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
@@ -44,8 +47,18 @@ defmodule GenAMQP.Client do
   end
 
   @spec publish_with_conn(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
-  def publish_with_conn(conn_name, exchange, payload, opts \\ []) when is_binary(payload) do
-    Conn.publish(conn_name, exchange, payload, :default, opts)
+  def publish_with_conn(conn_name, exchange, payload, _opts \\ []) when is_binary(payload) do
+    around_chan(conn_name, fn chan_name ->
+      Conn.publish(conn_name, exchange, payload, chan_name)
+    end)
+  end
+
+  defp around_chan(conn_name, execute) do
+    chan_name = UUID.uuid4()
+    :ok = Conn.create_chan(conn_name, chan_name)
+    resp = execute.(chan_name)
+    :ok = Conn.close_chan(conn_name, chan_name)
+    resp
   end
 
   defp wait_response(correlation_id, max_time) do
