@@ -97,6 +97,12 @@ defmodule GenAMQP.Server do
           {conn_name, conn_pid, false}
         end
 
+        defp reduce_with_funcs(funcs, event, payload) do
+          Enum.reduce(funcs, payload, fn f, acc ->
+            f.(event, acc)
+          end)
+        end
+
         def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
           payload = reduce_with_funcs(unquote(before_funcs), unquote(event), payload)
 

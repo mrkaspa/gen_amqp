@@ -28,13 +28,15 @@ defmodule ServerWithCallbacks do
     event: "server_callback_demo",
     conn_name: ConnHub,
     before: [
-      fn _event ->
+      fn _event, payload ->
         Agent.update(Agt, fn n -> n + 1 end)
+        payload
       end
     ],
     after: [
-      fn _event ->
+      fn _event, payload ->
         Agent.update(Agt, fn n -> n + 1 end)
+        payload
       end
     ]
 
