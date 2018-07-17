@@ -103,6 +103,10 @@ defmodule GenAMQP.Server do
           end)
         end
 
+        def reply(msg), do: {:reply, msg}
+
+        def noreply(), do: :noreply
+
         def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
           payload = reduce_with_funcs(unquote(before_funcs), unquote(event), payload)
 
