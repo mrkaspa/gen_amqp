@@ -35,7 +35,7 @@ defmodule GenAMQP.Mixfile do
 
   defp deps do
     [
-      {:ranch_proxy_protocol, "~> 2.0", override: true},
+      # {:ranch_proxy_protocol, "~> 2.0", override: true},
       {:amqp, "~> 1.0.3"},
       {:uuid, "~> 1.1.1"},
       {:dialyxir, "~> 0.5", only: :dev},
