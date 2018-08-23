@@ -35,14 +35,13 @@ defmodule GenAMQP.Mixfile do
 
   defp deps do
     [
-      # {:ranch_proxy_protocol, "~> 2.0", override: true},
       {:amqp, "~> 1.0.3"},
       {:uuid, "~> 1.1.1"},
       {:dialyxir, "~> 0.5", only: :dev},
-      {:credo, "~> 0.8", only: :dev},
-      {:ex_doc, "~> 0.14.5", only: :dev},
+      {:credo, "~> 0.10", only: :dev},
+      {:ex_doc, "~> 0.19.0", only: :dev},
       {:poison, "~> 3.0", only: :test},
-      {:excoveralls, "~> 0.5", only: :test},
+      {:excoveralls, "~> 0.9", only: :test},
       {:gen_debug, "~> 0.2.0", only: :test}
     ]
   end

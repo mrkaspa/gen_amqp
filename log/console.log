@@ -1,0 +1,70 @@
+2018-08-23 15:57:09.890 [error] <0.408.0> Supervisor 'Elixir.Logger.Supervisor' had child 'Elixir.Logger.ErrorHandler' started with 'Elixir.Logger.Watcher':start_link({error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}}) at <0.413.0> exit with reason normal in context child_terminated
+2018-08-23 15:57:09.918 [info] <0.33.0> Application lager started on node nonode@nohost
+2018-08-23 15:57:09.921 [info] <0.33.0> Application xmerl started on node nonode@nohost
+2018-08-23 15:57:09.923 [info] <0.33.0> Application jsx started on node nonode@nohost
+2018-08-23 15:57:09.927 [info] <0.33.0> Application ranch started on node nonode@nohost
+2018-08-23 15:57:09.928 [info] <0.33.0> Application ranch_proxy_protocol started on node nonode@nohost
+2018-08-23 15:57:09.928 [info] <0.33.0> Application recon started on node nonode@nohost
+2018-08-23 15:57:09.928 [info] <0.33.0> Application rabbit_common started on node nonode@nohost
+2018-08-23 15:57:09.935 [info] <0.33.0> Application amqp_client started on node nonode@nohost
+2018-08-23 15:57:09.935 [info] <0.33.0> Application amqp started on node nonode@nohost
+2018-08-23 15:57:10.000 [warning] <0.32.0> lager_error_logger_h dropped 2 messages in the last second that exceeded the limit of 50 messages/sec
+2018-08-23 15:57:10.010 [info] <0.33.0> Application gen_amqp started on node nonode@nohost
+2018-08-23 15:57:11.019 [warning] <0.32.0> lager_error_logger_h dropped 26 messages in the last second that exceeded the limit of 50 messages/sec
+2018-08-23 15:57:14.191 [error] <0.171.0> Supervisor 'Elixir.Logger.Supervisor' had child 'Elixir.Logger.ErrorHandler' started with 'Elixir.Logger.Watcher':start_link({error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}}) at <0.176.0> exit with reason normal in context child_terminated
+2018-08-23 15:57:14.223 [info] <0.33.0> Application lager started on node nonode@nohost
+2018-08-23 15:57:14.225 [info] <0.33.0> Application xmerl started on node nonode@nohost
+2018-08-23 15:57:14.227 [info] <0.33.0> Application jsx started on node nonode@nohost
+2018-08-23 15:57:14.234 [info] <0.33.0> Application ranch started on node nonode@nohost
+2018-08-23 15:57:14.235 [info] <0.33.0> Application ranch_proxy_protocol started on node nonode@nohost
+2018-08-23 15:57:14.237 [info] <0.33.0> Application recon started on node nonode@nohost
+2018-08-23 15:57:14.237 [info] <0.33.0> Application rabbit_common started on node nonode@nohost
+2018-08-23 15:57:14.243 [info] <0.33.0> Application amqp_client started on node nonode@nohost
+2018-08-23 15:57:14.243 [info] <0.33.0> Application amqp started on node nonode@nohost
+2018-08-23 15:57:15.125 [warning] <0.32.0> lager_error_logger_h dropped 50 messages in the last second that exceeded the limit of 50 messages/sec
+2018-08-23 15:57:18.060 [error] <0.171.0> Supervisor 'Elixir.Logger.Supervisor' had child 'Elixir.Logger.ErrorHandler' started with 'Elixir.Logger.Watcher':start_link({error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}}) at <0.176.0> exit with reason normal in context child_terminated
+2018-08-23 15:57:18.084 [info] <0.33.0> Application lager started on node nonode@nohost
+2018-08-23 15:57:18.088 [info] <0.33.0> Application xmerl started on node nonode@nohost
+2018-08-23 15:57:18.090 [info] <0.33.0> Application jsx started on node nonode@nohost
+2018-08-23 15:57:18.094 [info] <0.33.0> Application ranch started on node nonode@nohost
+2018-08-23 15:57:18.095 [info] <0.33.0> Application ranch_proxy_protocol started on node nonode@nohost
+2018-08-23 15:57:18.096 [info] <0.33.0> Application recon started on node nonode@nohost
+2018-08-23 15:57:18.096 [info] <0.33.0> Application rabbit_common started on node nonode@nohost
+2018-08-23 15:57:18.101 [info] <0.33.0> Application amqp_client started on node nonode@nohost
+2018-08-23 15:57:18.101 [info] <0.33.0> Application amqp started on node nonode@nohost
+2018-08-23 15:57:19.099 [warning] <0.32.0> lager_error_logger_h dropped 32 messages in the last second that exceeded the limit of 50 messages/sec
+2018-08-23 15:57:19.323 [error] <0.532.0> gen_server test_1 terminated with reason: die
+2018-08-23 15:57:19.324 [error] <0.532.0> CRASH REPORT Process test_1 with 0 neighbours exited with reason: die in gen_server:decode_msg/9 line 410
+2018-08-23 15:57:30.343 [error] <0.404.0> Supervisor 'Elixir.Logger.Supervisor' had child 'Elixir.Logger.ErrorHandler' started with 'Elixir.Logger.Watcher':start_link({error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}}) at <0.409.0> exit with reason normal in context child_terminated
+2018-08-23 15:57:30.374 [info] <0.33.0> Application lager started on node nonode@nohost
+2018-08-23 15:57:30.377 [info] <0.33.0> Application xmerl started on node nonode@nohost
+2018-08-23 15:57:30.378 [info] <0.33.0> Application jsx started on node nonode@nohost
+2018-08-23 15:57:30.382 [info] <0.33.0> Application ranch started on node nonode@nohost
+2018-08-23 15:57:30.383 [info] <0.33.0> Application ranch_proxy_protocol started on node nonode@nohost
+2018-08-23 15:57:30.385 [info] <0.33.0> Application recon started on node nonode@nohost
+2018-08-23 15:57:30.385 [info] <0.33.0> Application rabbit_common started on node nonode@nohost
+2018-08-23 15:57:30.391 [info] <0.33.0> Application amqp_client started on node nonode@nohost
+2018-08-23 15:57:30.391 [info] <0.33.0> Application amqp started on node nonode@nohost
+2018-08-23 15:57:31.109 [warning] <0.32.0> lager_error_logger_h dropped 15 messages in the last second that exceeded the limit of 50 messages/sec
+2018-08-23 15:57:34.045 [error] <0.171.0> Supervisor 'Elixir.Logger.Supervisor' had child 'Elixir.Logger.ErrorHandler' started with 'Elixir.Logger.Watcher':start_link({error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}}) at <0.176.0> exit with reason normal in context child_terminated
+2018-08-23 15:57:34.068 [info] <0.33.0> Application lager started on node nonode@nohost
+2018-08-23 15:57:34.073 [info] <0.33.0> Application xmerl started on node nonode@nohost
+2018-08-23 15:57:34.075 [info] <0.33.0> Application jsx started on node nonode@nohost
+2018-08-23 15:57:34.079 [info] <0.33.0> Application ranch started on node nonode@nohost
+2018-08-23 15:57:34.080 [info] <0.33.0> Application ranch_proxy_protocol started on node nonode@nohost
+2018-08-23 15:57:34.080 [info] <0.33.0> Application recon started on node nonode@nohost
+2018-08-23 15:57:34.081 [info] <0.33.0> Application rabbit_common started on node nonode@nohost
+2018-08-23 15:57:34.086 [info] <0.33.0> Application amqp_client started on node nonode@nohost
+2018-08-23 15:57:34.086 [info] <0.33.0> Application amqp started on node nonode@nohost
+2018-08-23 15:57:35.100 [warning] <0.32.0> lager_error_logger_h dropped 15 messages in the last second that exceeded the limit of 50 messages/sec
+2018-08-23 15:57:39.235 [error] <0.171.0> Supervisor 'Elixir.Logger.Supervisor' had child 'Elixir.Logger.ErrorHandler' started with 'Elixir.Logger.Watcher':start_link({error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}}) at <0.176.0> exit with reason normal in context child_terminated
+2018-08-23 15:57:39.258 [info] <0.33.0> Application lager started on node nonode@nohost
+2018-08-23 15:57:39.261 [info] <0.33.0> Application xmerl started on node nonode@nohost
+2018-08-23 15:57:39.263 [info] <0.33.0> Application jsx started on node nonode@nohost
+2018-08-23 15:57:39.267 [info] <0.33.0> Application ranch started on node nonode@nohost
+2018-08-23 15:57:39.269 [info] <0.33.0> Application ranch_proxy_protocol started on node nonode@nohost
+2018-08-23 15:57:39.269 [info] <0.33.0> Application recon started on node nonode@nohost
+2018-08-23 15:57:39.269 [info] <0.33.0> Application rabbit_common started on node nonode@nohost
+2018-08-23 15:57:39.274 [info] <0.33.0> Application amqp_client started on node nonode@nohost
+2018-08-23 15:57:39.274 [info] <0.33.0> Application amqp started on node nonode@nohost
+2018-08-23 15:57:40.097 [warning] <0.32.0> lager_error_logger_h dropped 34 messages in the last second that exceeded the limit of 50 messages/sec
