@@ -1,0 +1,29 @@
+2018-08-23 15:13:29 =ERROR REPORT====
+** Generic server 'Elixir.ConnHub' terminating 
+** Last message in was {'EXIT',<0.890.0>,die}
+** When Server state == #{chans => #{'Elixir.ServerDemo.Worker_1' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.574.0>},'Elixir.ServerDemo.Worker_2' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.580.0>},'Elixir.ServerDemo.Worker_3' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.586.0>},'Elixir.ServerWithCallbacks.Worker_1' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.612.0>},'Elixir.ServerWithCallbacks.Worker_2' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.618.0>},'Elixir.ServerWithCallbacks.Worker_3' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.624.0>},'Elixir.ServerWithHandleDemo.Worker_1' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.593.0>},'Elixir.ServerWithHandleDemo.Worker_2' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.599.0>},'Elixir.ServerWithHandleDemo.Worker_3' => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.605.0>},default => #{'__struct__' => 'Elixir.AMQP.Channel',conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},pid => <0.567.0>}},conn => #{'__struct__' => 'Elixir.AMQP.Connection',pid => <0.556.0>},conn_name => 'Elixir.ConnHub',queues => #{<0.571.0> => <<"server_demo">>,<0.577.0> => <<"server_demo">>,<0.583.0> => <<"server_demo">>,<0.590.0> => <<"server_handle_demo">>,<0.596.0> => <<"server_handle_demo">>,<0.602.0> => <<"server_handle_demo">>,<0.609.0> => <<"server_callback_demo">>,<0.615.0> => <<"server_callback_demo">>,<0.621.0> => <<"server_callback_demo">>},subscriptions => #{<<"server_callback_demo">> => [],<<"server_demo">> => [],<<"server_handle_demo">> => []}}
+** Reason for termination == 
+** die
+2018-08-23 15:13:29 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.GenAMQP.Conn:init/1
+    pid: <0.553.0>
+    registered_name: 'Elixir.ConnHub'
+    exception exit: {die,[{gen_server,handle_common_reply,8,[{file,"gen_server.erl"},{line,751}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,249}]}]}
+    ancestors: ['Elixir.StaticConnSup','Elixir.GenAMQP.AppSupervisor',<0.550.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.552.0>]
+    dictionary: [{gen_server_call_timeout,60000}]
+    trap_exit: true
+    status: running
+    heap_size: 6772
+    stack_size: 27
+    reductions: 13576
+  neighbours:
+2018-08-23 15:13:29 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.StaticConnSup'}
+     Context:    child_terminated
+     Reason:     die
+     Offender:   [{pid,<0.553.0>},{id,'Elixir.GenAMQP.Conn'},{mfargs,{'Elixir.GenAMQP.Conn',start_link,[<<"amqp://guest:guest@localhost">>,'Elixir.ConnHub']}},{restart_type,transient},{shutdown,5000},{child_type,worker}]
+

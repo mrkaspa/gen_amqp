@@ -4,8 +4,8 @@ defmodule GenAMQP.Mixfile do
   def project do
     [
       app: :gen_amqp,
-      version: "3.4.0",
-      elixir: "~> 1.6",
+      version: "3.5.0",
+      elixir: "~> 1.6.0",
       description: description(),
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -35,8 +35,9 @@ defmodule GenAMQP.Mixfile do
 
   defp deps do
     [
-      {:amqp, "~> 0.2.3"},
-      {:uuid, "~> 1.1"},
+      {:ranch_proxy_protocol, "~> 2.0", override: true},
+      {:amqp, "~> 1.0.3"},
+      {:uuid, "~> 1.1.1"},
       {:dialyxir, "~> 0.5", only: :dev},
       {:credo, "~> 0.8", only: :dev},
       {:ex_doc, "~> 0.14.5", only: :dev},
