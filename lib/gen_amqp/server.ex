@@ -228,8 +228,8 @@ defmodule GenAMQP.Server do
     Behaviour to implement by the servers
     """
 
-    @callback execute(String.t()) :: {:reply, any()} | :noreply
+    @callback execute(any()) :: {:reply, any()} | :noreply
 
-    @callback handle(any) :: {:reply, any()} | :noreply
+    @callback handle(any()) :: {:reply, any()} | :noreply
   end
 end
