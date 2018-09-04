@@ -131,10 +131,10 @@ defmodule GenAMQP.Server do
             rescue
               exception ->
                 Logger.error("STACKTRACE - RESCUE")
-                stacktrace = inspect(System.stacktrace())
-                Logger.error(stacktrace)
+                stacktrace = System.stacktrace()
+                Logger.error(inspect(stacktrace))
 
-                case create_error(exception) do
+                case create_error({:error, Exception.message(exception), stacktrace}) do
                   {:reply, resp} ->
                     {true, resp}
 
