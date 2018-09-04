@@ -134,7 +134,7 @@ defmodule GenAMQP.Server do
                 stacktrace = System.stacktrace()
                 Logger.error(inspect(stacktrace))
 
-                case create_error({:error, Exception.message(exception), stacktrace}) do
+                case create_error([exception, stacktrace]) do
                   {:reply, resp} ->
                     {true, resp}
 
@@ -147,7 +147,7 @@ defmodule GenAMQP.Server do
                 stacktrace = System.stacktrace()
                 Logger.error(inspect(stacktrace))
 
-                case create_error({kind, reason, stacktrace}) do
+                case create_error([{kind, reason, stacktrace}]) do
                   {:reply, resp} ->
                     {true, resp}
 
@@ -197,9 +197,9 @@ defmodule GenAMQP.Server do
           Conn.response(conn_name, meta, create_error("message in wrong type"), chan_name)
         end
 
-        defp create_error(exception) do
+        defp create_error(args) do
           module = Application.get_env(:gen_amqp, :error_handler)
-          handle_return = apply(module, :handle, [exception])
+          handle_return = apply(module, :handle, args)
           IO.puts("Error Handler return = #{inspect(handle_return)}")
           handle_return
         end
