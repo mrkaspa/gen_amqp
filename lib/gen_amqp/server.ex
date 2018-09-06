@@ -5,7 +5,7 @@ defmodule GenAMQP.Server do
 
   defmacro __using__(opts) do
     event = opts[:event]
-    pool_size = Keyword.get(opts, :pool_size, 10)
+    pool_size = Keyword.get(opts, :pool_size, 15)
     size = Keyword.get(opts, :size, 3)
     conn_name = Keyword.get(opts, :conn_name, nil)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
