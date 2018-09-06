@@ -1,10 +1,10 @@
 defmodule ErrorHandler do
-  def handle({msg, _stacktrace}) do
+  def handle(error) do
     resp =
       Poison.encode!(%{
         status: :error,
         code: 0,
-        message: msg
+        message: inspect(error)
       })
 
     {:reply, resp}
