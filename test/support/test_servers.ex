@@ -63,24 +63,12 @@ defmodule ServerWithHandleDemo do
   end
 end
 
-defmodule DynamicServerDemo do
-  @moduledoc false
-
-  use GenAMQP.Server,
-    event: "dyna",
-    conn_supervisor: DynamicConnSup
-
-  def execute(_) do
-    {:reply, "ok"}
-  end
-end
-
 defmodule ServerCrash do
   @moduledoc false
 
   use GenAMQP.Server,
     event: "crash",
-    conn_supervisor: DynamicConnSup
+    conn_name: ConnHub
 
   def execute(_) do
     raise "error"
@@ -104,7 +92,6 @@ defmodule DemoApp do
           supervisor(ServerDemo, []),
           supervisor(ServerWithHandleDemo, []),
           supervisor(ServerWithCallbacks, []),
-          supervisor(DynamicServerDemo, []),
           supervisor(ServerCrash, [])
         ]
 
@@ -116,9 +103,6 @@ defmodule DemoApp do
     Enum.map(conns, fn
       {:static, sup_name, conn_name, conn_url} ->
         supervisor(GenAMQP.ConnSupervisor, [sup_name, conn_name, conn_url], id: sup_name)
-
-      {:dynamic, sup_name, conn_url} ->
-        supervisor(GenAMQP.ConnSupervisor, [sup_name, nil, conn_url], id: sup_name)
     end)
   end
 end
