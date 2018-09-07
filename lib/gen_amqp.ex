@@ -7,8 +7,7 @@ defmodule GenAMQP do
   ```elixir
       config :gen_amqp,
         connections: [
-          {:static, StaticConnSup, ConnHub, "amqp://guest:guest@localhost"},
-          {:dynamic, DynamicConnSup, "amqp://guest:guest@localhost"}
+          {:static, StaticConnSup, ConnHub, "amqp://guest:guest@localhost"}
         ],
         error_handler: ErrorHandler
   ```
@@ -70,9 +69,6 @@ defmodule GenAMQP do
     Enum.map(conns, fn
       {:static, sup_name, conn_name, conn_url} ->
         supervisor(GenAMQP.ConnSupervisor, [sup_name, conn_name, conn_url], id: sup_name)
-
-      {:dynamic, sup_name, conn_url} ->
-        supervisor(GenAMQP.ConnSupervisor, [sup_name, nil, conn_url], id: sup_name)
     end)
   end
 end

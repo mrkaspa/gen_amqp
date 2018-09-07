@@ -5,6 +5,7 @@ defmodule GenAMQP.Server do
 
   defmacro __using__(opts) do
     event = opts[:event]
+    pool_size = Keyword.get(opts, :pool_size, 15)
     size = Keyword.get(opts, :size, 3)
     conn_name = Keyword.get(opts, :conn_name, nil)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
@@ -42,8 +43,20 @@ defmodule GenAMQP.Server do
             worker(__MODULE__.Worker, [id], id: id, restart: :transient, shutdown: 1)
           end)
 
+        pool_name = String.to_atom("#{__MODULE__}_pool")
+        children = children ++ [:poolboy.child_spec(pool_name, poolboy_config(pool_name))]
+
         Logger.info("Starting #{__MODULE__}")
         supervise(children, strategy: :one_for_one)
+      end
+
+      defp poolboy_config(pool_name) do
+        [
+          {:name, {:local, pool_name}},
+          {:worker_module, GenAMQP.PoolWorker},
+          {:size, unquote(pool_size)},
+          {:max_overflow, 3}
+        ]
       end
 
       def reply(msg), do: {:reply, msg}
@@ -89,78 +102,28 @@ defmodule GenAMQP.Server do
            }}
         end
 
-        defp start_conn(server_name, nil) do
-          conn_name = String.to_atom("#{server_name}.Conn")
-          spec = {GenAMQP.Conn, conn_name}
-          {:ok, conn_pid} = DynamicSupervisor.start_child(unquote(dynamic_sup_name), spec)
-          {conn_name, conn_pid, true}
-        end
-
         defp start_conn(_server_name, conn_name) do
           conn_pid = Process.whereis(conn_name)
           {conn_name, conn_pid, false}
         end
 
-        defp reduce_with_funcs(funcs, event, payload) do
-          Enum.reduce(funcs, payload, fn f, acc ->
-            f.(event, acc)
-          end)
-        end
-
         def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
-          payload = reduce_with_funcs(unquote(before_funcs), unquote(event), payload)
+          pool_name = String.to_atom("#{@exec_module}_pool")
 
-          {reply?, resp} =
-            try do
-              case apply(@exec_module, :execute, [payload]) do
-                {:reply, resp} ->
-                  {true, resp}
+          :poolboy.transaction(pool_name, fn worker ->
+            data = %{
+              event: unquote(event),
+              exec_module: @exec_module,
+              before_funcs: unquote(before_funcs),
+              after_funcs: unquote(after_funcs),
+              conn_name: conn_name,
+              chan_name: chan_name,
+              payload: payload,
+              meta: meta
+            }
 
-                :noreply ->
-                  {false, nil}
-
-                other ->
-                  case apply(@exec_module, :handle, [other]) do
-                    {:reply, resp} ->
-                      {true, resp}
-
-                    :noreply ->
-                      {false, nil}
-                  end
-              end
-            rescue
-              exception ->
-                Logger.error("STACKTRACE - RESCUE")
-                stacktrace = System.stacktrace()
-                Logger.error(inspect(stacktrace))
-
-                case create_error([exception, stacktrace]) do
-                  {:reply, resp} ->
-                    {true, resp}
-
-                  :noreply ->
-                    {false, nil}
-                end
-            catch
-              kind, reason ->
-                Logger.error("STACKTRACE - CATCH")
-                stacktrace = System.stacktrace()
-                Logger.error(inspect(stacktrace))
-
-                case create_error([{kind, reason, stacktrace}]) do
-                  {:reply, resp} ->
-                    {true, resp}
-
-                  :noreply ->
-                    {false, nil}
-                end
-            end
-
-          resp = reduce_with_funcs(unquote(after_funcs), unquote(event), resp)
-
-          if reply? do
-            reply(conn_name, chan_name, meta, resp)
-          end
+            GenServer.cast(worker, {:incoming, data})
+          end)
         end
 
         def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do
@@ -177,31 +140,6 @@ defmodule GenAMQP.Server do
 
         def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, state) do
           {:noreply, %{state | consumer_tag: consumer_tag}}
-        end
-
-        defp reply(
-               _conn_name,
-               _chan_name,
-               %{reply_to: :undefined, correlation_id: :undefined} = meta,
-               resp
-             ),
-             do: nil
-
-        defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp)
-             when is_binary(resp) do
-          Conn.response(conn_name, meta, resp, chan_name)
-        end
-
-        defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp) do
-          Logger.error("message in wrong type #{inspect(resp)}")
-          Conn.response(conn_name, meta, create_error("message in wrong type"), chan_name)
-        end
-
-        defp create_error(args) do
-          module = Application.get_env(:gen_amqp, :error_handler)
-          handle_return = apply(module, :handle, args)
-          IO.puts("Error Handler return = #{inspect(handle_return)}")
-          handle_return
         end
 
         def terminate(reason, %{conn_pid: conn_pid, conn_created: true} = _state) do
