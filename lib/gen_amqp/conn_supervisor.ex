@@ -16,9 +16,9 @@ defmodule GenAMQP.ConnSupervisor do
     :ets.new(:conns, [:named_table, :set, :public])
 
     children = [
-      worker(GenAMQP.Conn, [conn_url, conn_name], restart: :transient)
+      worker(GenAMQP.Conn, [conn_url, conn_name], restart: :permanent)
     ]
 
-    supervise(children, strategy: :one_for_one)
+    supervise(children, strategy: :one_for_one, max_restarts: 10)
   end
 end
