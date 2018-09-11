@@ -142,6 +142,11 @@ defmodule GenAMQP.Server do
           {:noreply, %{state | consumer_tag: consumer_tag}}
         end
 
+        def handle_info(message, state) do
+          Logger.info("Unhandle message in #{__MODULE__} = #{inspect(message)}")
+          {:noreply, state}
+        end
+
         def terminate(reason, %{conn_pid: conn_pid, conn_created: true} = _state) do
           :ok = Supervisor.terminate_child(unquote(dynamic_sup_name), conn_pid)
           Logger.error("Terminate connection in #{__MODULE__}, reason: #{inspect(reason)}")
