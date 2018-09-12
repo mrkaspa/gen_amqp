@@ -12,10 +12,6 @@ defmodule GenAMQP.PoolWorker do
         payload: payload,
         meta: meta
       }) do
-    Logger.info("Message Ack (#{inspect(self())}): -> #{meta.delivery_tag} \n content #{payload}")
-
-    :ok = Conn.ack(conn_name, chan_name, meta)
-
     payload = reduce_with_funcs(before_funcs, event, payload)
 
     {reply?, resp} =
