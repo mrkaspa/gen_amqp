@@ -110,20 +110,31 @@ defmodule GenAMQP.Server do
         def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
           pool_name = String.to_atom("#{@exec_module}_pool")
 
-          :poolboy.transaction(pool_name, fn worker ->
-            data = %{
-              event: unquote(event),
-              exec_module: @exec_module,
-              before_funcs: unquote(before_funcs),
-              after_funcs: unquote(after_funcs),
-              conn_name: conn_name,
-              chan_name: chan_name,
-              payload: payload,
-              meta: meta
-            }
+          try do
+            :poolboy.transaction(
+              pool_name,
+              fn worker ->
+                Conn.ack(conn_name, chan_name, meta)
 
-            GenServer.cast(worker, {:incoming, data})
-          end)
+                data = %{
+                  event: unquote(event),
+                  exec_module: @exec_module,
+                  before_funcs: unquote(before_funcs),
+                  after_funcs: unquote(after_funcs),
+                  conn_name: conn_name,
+                  chan_name: chan_name,
+                  payload: payload,
+                  meta: meta
+                }
+
+                GenServer.cast(worker, {:incoming, data})
+              end,
+              1000
+            )
+          rescue
+            error ->
+              Conn.nack(conn_name, chan_name, meta)
+          end
         end
 
         def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do
