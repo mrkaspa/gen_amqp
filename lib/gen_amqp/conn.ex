@@ -70,16 +70,6 @@ defmodule GenAMQP.Conn do
     GenServer.call(name, {:unsubscribe, exchange, chan_name})
   end
 
-  @spec ack(GenServer.name(), String.t(), map) :: any
-  def ack(name, chan_name, meta) do
-    GenServer.call(name, {:ack, chan_name, meta})
-  end
-
-  @spec nack(GenServer.name(), String.t(), map) :: any
-  def nack(name, chan_name, meta) do
-    GenServer.call(name, {:nack, chan_name, meta})
-  end
-
   # Private API
 
   def init([name, amqp_url]) do
@@ -226,26 +216,6 @@ defmodule GenAMQP.Conn do
     {:reply, :ok, new_state}
   end
 
-  def handle_call(
-        {:ack, chan_name, %{delivery_tag: delivery_tag}},
-        _from,
-        %{chans: chans} = state
-      ) do
-    chan = chans[chan_name]
-    resp = AMQP.Basic.ack(chan, delivery_tag)
-    {:reply, resp, state}
-  end
-
-  def handle_call(
-        {:nack, chan_name, %{delivery_tag: delivery_tag}},
-        _from,
-        %{chans: chans} = state
-      ) do
-    chan = chans[chan_name]
-    resp = AMQP.Basic.reject(chan, delivery_tag)
-    {:reply, resp, state}
-  end
-
   def handle_info({:EXIT, _pid, reason}, state) do
     {:stop, reason, state}
   end
@@ -268,7 +238,7 @@ defmodule GenAMQP.Conn do
   @spec consume(pid, struct, String.t()) :: String.t()
   defp consume(pid, chan, exchange) do
     {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, exchange, durable: false)
-    {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid)
+    {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: true)
     queue_name
   end
 end
