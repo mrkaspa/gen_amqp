@@ -1,30 +1,21 @@
 defmodule GenAMQP.PoolWorker do
-  use GenServer
   alias GenAMQP.Conn
   require Logger
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, nil, [])
-  end
+  def work(%{
+        event: event,
+        exec_module: exec_module,
+        before_funcs: before_funcs,
+        after_funcs: after_funcs,
+        conn_name: conn_name,
+        chan_name: chan_name,
+        payload: payload,
+        meta: meta
+      }) do
+    Logger.info("Message Ack (#{inspect(self())}): -> #{meta.delivery_tag} \n content #{payload}")
 
-  def init(_) do
-    {:ok, nil}
-  end
+    :ok = Conn.ack(conn_name, chan_name, meta)
 
-  def handle_cast(
-        {:incoming,
-         %{
-           event: event,
-           exec_module: exec_module,
-           before_funcs: before_funcs,
-           after_funcs: after_funcs,
-           conn_name: conn_name,
-           chan_name: chan_name,
-           payload: payload,
-           meta: meta
-         }},
-        state
-      ) do
     payload = reduce_with_funcs(before_funcs, event, payload)
 
     {reply?, resp} =
@@ -78,8 +69,6 @@ defmodule GenAMQP.PoolWorker do
     if reply? do
       reply(conn_name, chan_name, meta, resp)
     end
-
-    {:noreply, state}
   end
 
   defp reply(

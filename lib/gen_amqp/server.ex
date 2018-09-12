@@ -5,7 +5,6 @@ defmodule GenAMQP.Server do
 
   defmacro __using__(opts) do
     event = opts[:event]
-    pool_size = Keyword.get(opts, :pool_size, 15)
     size = Keyword.get(opts, :size, 3)
     conn_name = Keyword.get(opts, :conn_name, nil)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
@@ -43,20 +42,10 @@ defmodule GenAMQP.Server do
             worker(__MODULE__.Worker, [id], id: id, restart: :transient, shutdown: 1)
           end)
 
-        pool_name = String.to_atom("#{__MODULE__}_pool")
-        children = children ++ [:poolboy.child_spec(pool_name, poolboy_config(pool_name))]
+        children = children
 
         Logger.info("Starting #{__MODULE__}")
         supervise(children, strategy: :one_for_one)
-      end
-
-      defp poolboy_config(pool_name) do
-        [
-          {:name, {:local, pool_name}},
-          {:worker_module, GenAMQP.PoolWorker},
-          {:size, unquote(pool_size)},
-          {:max_overflow, 3}
-        ]
       end
 
       def reply(msg), do: {:reply, msg}
@@ -108,33 +97,18 @@ defmodule GenAMQP.Server do
         end
 
         def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
-          pool_name = String.to_atom("#{@exec_module}_pool")
+          data = %{
+            event: unquote(event),
+            exec_module: @exec_module,
+            before_funcs: unquote(before_funcs),
+            after_funcs: unquote(after_funcs),
+            conn_name: conn_name,
+            chan_name: chan_name,
+            payload: payload,
+            meta: meta
+          }
 
-          try do
-            :poolboy.transaction(
-              pool_name,
-              fn worker ->
-                Conn.ack(conn_name, chan_name, meta)
-
-                data = %{
-                  event: unquote(event),
-                  exec_module: @exec_module,
-                  before_funcs: unquote(before_funcs),
-                  after_funcs: unquote(after_funcs),
-                  conn_name: conn_name,
-                  chan_name: chan_name,
-                  payload: payload,
-                  meta: meta
-                }
-
-                GenServer.cast(worker, {:incoming, data})
-              end,
-              1000
-            )
-          rescue
-            error ->
-              Conn.nack(conn_name, chan_name, meta)
-          end
+          GenAMQP.PoolWorker.work(data)
         end
 
         def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do

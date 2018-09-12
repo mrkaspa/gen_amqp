@@ -71,13 +71,13 @@ defmodule GenAMQP.Conn do
   end
 
   @spec ack(GenServer.name(), String.t(), map) :: any
-  def ack(conn_name, chan_name, meta) do
-    GenServer.call(conn_name, {:nack, chan_name, meta})
+  def ack(name, chan_name, meta) do
+    GenServer.call(name, {:ack, chan_name, meta})
   end
 
   @spec nack(GenServer.name(), String.t(), map) :: any
-  def nack(conn_name, chan_name, meta) do
-    GenServer.call(conn_name, {:nack, chan_name, meta})
+  def nack(name, chan_name, meta) do
+    GenServer.call(name, {:nack, chan_name, meta})
   end
 
   # Private API
