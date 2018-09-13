@@ -1,5 +1,9 @@
 defmodule ErrorHandler do
-  def handle(error) do
+  def handle(kind, reason, stacktrace) do
+    handle(Exception.normalize(kind, reason, stacktrace), stacktrace)
+  end
+
+  def handle(error, _stacktrace) do
     resp =
       Poison.encode!(%{
         status: :error,

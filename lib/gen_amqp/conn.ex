@@ -92,7 +92,7 @@ defmodule GenAMQP.Conn do
   defp reconnect(connected) do
     Logger.info("restarting #{inspect(connected)}")
 
-    for gen_name <- connected, gen_name != :default do
+    for gen_name <- connected do
       GenServer.cast(gen_name, :reconnect)
     end
   end
@@ -176,10 +176,10 @@ defmodule GenAMQP.Conn do
       |> Map.update!(exchange, fn subscribers ->
         case Enum.find_value(subscribers, nil, &(&1 == pid_from)) do
           nil ->
-            subscribers
+            [pid_from | subscribers]
 
           _ ->
-            [pid_from | subscribers]
+            subscribers
         end
       end)
 
@@ -220,14 +220,19 @@ defmodule GenAMQP.Conn do
     {:stop, reason, state}
   end
 
-  def terminate(reason, %{conn_name: conn_name, chans: chans} = state) do
+  def terminate(reason, %{conn_name: conn_name, subscriptions: subscriptions} = state) do
     Logger.info("Closing AMQP Connection reason: #{inspect(reason)}")
 
     if conn_name != nil do
       if reason in [:normal, :shutdown] or match?({:shutdown, _}, reason) do
         :ets.delete(:conns, conn_name)
       else
-        :ets.insert(:conns, {conn_name, Map.keys(chans)})
+        pids =
+          subscriptions
+          |> Enum.flat_map(fn {_k, v} -> v end)
+          |> Enum.uniq()
+
+        :ets.insert(:conns, {conn_name, pids})
       end
     end
 

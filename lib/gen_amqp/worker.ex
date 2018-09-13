@@ -38,7 +38,7 @@ defmodule GenAMQP.PoolWorker do
           st = inspect(System.stacktrace())
           Logger.error(st)
 
-          case create_error({inspect(e), st}) do
+          case create_error([e, st]) do
             {:reply, resp} ->
               {true, resp}
 
@@ -46,12 +46,12 @@ defmodule GenAMQP.PoolWorker do
               {false, nil}
           end
       catch
-        :exit, reason ->
+        kind, reason ->
           Logger.error("STACKTRACE - EXIT")
           st = inspect(System.stacktrace())
           Logger.error(st)
 
-          case create_error({reason, st}) do
+          case create_error([kind, reason, st]) do
             {:reply, resp} ->
               {true, resp}
 
@@ -85,11 +85,11 @@ defmodule GenAMQP.PoolWorker do
     Conn.response(conn_name, meta, create_error("message in wrong type"), chan_name)
   end
 
-  defp create_error(msg) do
+  defp create_error(args) do
     module = Application.get_env(:gen_amqp, :error_handler)
-    sol = apply(module, :handle, [msg])
+    sol = apply(module, :handle, args)
     IO.puts("SOL = #{inspect(sol)}")
-    apply(module, :handle, [msg])
+    sol
   end
 
   defp reduce_with_funcs(funcs, event, payload) do
