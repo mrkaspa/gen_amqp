@@ -35,8 +35,8 @@ defmodule GenAMQP.PoolWorker do
       rescue
         e ->
           Logger.error("STACKTRACE - RESCUE")
-          st = inspect(System.stacktrace())
-          Logger.error(st)
+          st = System.stacktrace()
+          Logger.error(inspect(st))
 
           case create_error([e, st]) do
             {:reply, resp} ->
@@ -48,8 +48,8 @@ defmodule GenAMQP.PoolWorker do
       catch
         kind, reason ->
           Logger.error("STACKTRACE - EXIT")
-          st = inspect(System.stacktrace())
-          Logger.error(st)
+          st = System.stacktrace()
+          Logger.error(inspect(st))
 
           case create_error([kind, reason, st]) do
             {:reply, resp} ->
