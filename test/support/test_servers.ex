@@ -105,8 +105,8 @@ defmodule DemoApp do
 
   defp conns_to_specs(conns) do
     Enum.map(conns, fn
-      {:static, sup_name, conn_name, conn_url} ->
-        supervisor(GenAMQP.ConnSupervisor, [sup_name, conn_name, conn_url], id: sup_name)
+      {:static, sup_name, conns} ->
+        supervisor(GenAMQP.ConnSupervisor, [sup_name, conns], id: sup_name)
     end)
   end
 end
