@@ -17,7 +17,7 @@ defmodule GenAMQP.ConnSupervisor do
 
     children =
       Enum.map(conns, fn {conn_name, conn_url} ->
-        worker(GenAMQP.Conn, [conn_url, conn_name], restart: :permanent)
+        worker(GenAMQP.Conn, [conn_url, conn_name], restart: :permanent, id: conn_name)
       end)
 
     supervise(children, strategy: :one_for_one, max_restarts: 10)
