@@ -20,17 +20,17 @@ defmodule GenAMQP.Conn do
   @doc """
   Creates a new channel
   """
-  @spec create_chan(GenServer.name(), atom) :: any
-  def create_chan(name, chan_name) do
-    GenServer.call(name, {:create_chan, chan_name})
+  @spec create_chan(GenServer.name(), atom(), KeyError.t()) :: {:ok, AMQP.Channel.t()}
+  def create_chan(name, chan_name, opts \\ []) do
+    GenServer.call(name, {:create_chan, chan_name, opts})
   end
 
   @doc """
   Closes a channel
   """
-  @spec close_chan(GenServer.name(), atom) :: any
-  def close_chan(name, chan_name) do
-    GenServer.call(name, {:close_chan, chan_name})
+  @spec close_chan(GenServer.name(), String.t() | AMQP.Channel.t()) :: any()
+  def close_chan(name, chan) do
+    GenServer.call(name, {:close_chan, chan})
   end
 
   @doc """
@@ -97,21 +97,38 @@ defmodule GenAMQP.Conn do
     end
   end
 
-  def handle_call({:create_chan, name}, _from, %{conn: conn} = state) do
-    {:ok, chan} = AMQP.Channel.open(conn)
-    new_state = update_in(state.chans, &Map.put(&1, name, chan))
-    {:reply, :ok, new_state}
+  def handle_call({:create_chan, name, opts}, _from, %{conn: conn} = state) do
+    {:ok, chan} = resp = AMQP.Channel.open(conn)
+    store = Keyword.get(opts, :store, true)
+
+    if store do
+      new_state = update_in(state.chans, &Map.put(&1, name, chan))
+      {:reply, :ok, new_state}
+    else
+      {:reply, resp, state}
+    end
   end
 
-  def handle_call({:close_chan, name}, _from, state) do
+  def handle_call({:close_chan, name}, _from, state) when is_binary(name) or is_atom(name) do
     :ok = AMQP.Channel.close(state.chans[name])
     new_state = update_in(state.chans, &Map.delete(&1, name))
     {:reply, :ok, new_state}
   end
 
-  def handle_call({:publish, exchange, payload, chan_name, opts}, _from, %{chans: chans} = state) do
+  def handle_call({:close_chan, chan}, _from, state) do
+    :ok = AMQP.Channel.close(chan)
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:publish, exchange, payload, chan_name, opts}, _from, %{chans: chans} = state)
+      when is_binary(chan_name) or is_atom(chan_name) do
     chan = chans[chan_name]
 
+    AMQP.Basic.publish(chan, "", exchange, payload, opts)
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:publish, exchange, payload, chan, opts}, _from, state) do
     AMQP.Basic.publish(chan, "", exchange, payload, opts)
     {:reply, :ok, state}
   end
@@ -134,31 +151,33 @@ defmodule GenAMQP.Conn do
         {:request, exchange, payload, chan_name, opts},
         {pid_from, _},
         %{chans: chans} = state
-      ) do
+      )
+      when is_binary(chan_name) or is_atom(chan_name) do
     chan = chans[chan_name]
 
-    correlation_id =
-      :erlang.unique_integer()
-      |> :erlang.integer_to_binary()
-      |> Base.encode64()
-
-    {:ok, %{queue: queue_name}} =
-      AMQP.Queue.declare(chan, "", exclusive: true, auto_delete: true, durable: false)
-
-    AMQP.Basic.consume(chan, queue_name, pid_from, no_ack: true)
-
-    AMQP.Basic.publish(
-      chan,
-      "",
+    do_request(
       exchange,
       payload,
-      Keyword.merge(
-        [reply_to: queue_name, correlation_id: correlation_id],
-        opts
-      )
+      chan,
+      pid_from,
+      state,
+      opts
     )
+  end
 
-    {:reply, {:ok, correlation_id}, state}
+  def handle_call(
+        {:request, exchange, payload, chan, opts},
+        {pid_from, _},
+        state
+      ) do
+    do_request(
+      exchange,
+      payload,
+      chan,
+      pid_from,
+      state,
+      opts
+    )
   end
 
   def handle_call(
@@ -245,5 +264,37 @@ defmodule GenAMQP.Conn do
     {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, exchange, durable: false)
     {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: true)
     queue_name
+  end
+
+  defp do_request(
+         exchange,
+         payload,
+         chan,
+         pid_from,
+         state,
+         opts
+       ) do
+    correlation_id =
+      :erlang.unique_integer()
+      |> :erlang.integer_to_binary()
+      |> Base.encode64()
+
+    {:ok, %{queue: queue_name}} =
+      AMQP.Queue.declare(chan, "", exclusive: true, auto_delete: true, durable: false)
+
+    AMQP.Basic.consume(chan, queue_name, pid_from, no_ack: true)
+
+    AMQP.Basic.publish(
+      chan,
+      "",
+      exchange,
+      payload,
+      Keyword.merge(
+        [reply_to: queue_name, correlation_id: correlation_id],
+        opts
+      )
+    )
+
+    {:reply, {:ok, correlation_id}, state}
   end
 end
