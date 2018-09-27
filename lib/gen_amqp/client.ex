@@ -25,9 +25,16 @@ defmodule GenAMQP.Client do
   defp around_chan(conn_name, execute) do
     chan_name = UUID.uuid4()
     {:ok, chan} = Conn.create_chan(conn_name, chan_name, store: false)
-    resp = execute.(chan)
-    :ok = Conn.close_chan(conn_name, chan)
-    resp
+
+    try do
+      IO.inspect("before exec")
+      execute.(chan)
+    after
+      IO.inspect("closing chan exec")
+      :ok = Conn.close_chan(conn_name, chan)
+    else
+      resp -> resp
+    end
   end
 
   defp wait_response(correlation_id, max_time) do
