@@ -27,10 +27,8 @@ defmodule GenAMQP.Client do
     {:ok, chan} = Conn.create_chan(conn_name, chan_name, store: false)
 
     try do
-      IO.inspect("before exec")
       execute.(chan)
     after
-      IO.inspect("closing chan exec")
       :ok = Conn.close_chan(conn_name, chan)
     else
       resp -> resp
