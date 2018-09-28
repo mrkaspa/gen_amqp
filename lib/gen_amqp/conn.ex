@@ -75,7 +75,9 @@ defmodule GenAMQP.Conn do
   def init([name, amqp_url]) do
     Logger.info("Starting connection")
     Process.flag(:trap_exit, true)
-    {:ok, conn} = AMQP.Connection.open(amqp_url)
+    {:ok, %AMQP.Connection{pid: pid} = conn} = AMQP.Connection.open(amqp_url)
+    Process.link(pid)
+    Logger.info("Connection linked #{inspect(pid)}")
     {:ok, chan} = AMQP.Channel.open(conn)
 
     if name != nil do
@@ -255,7 +257,12 @@ defmodule GenAMQP.Conn do
       end
     end
 
-    AMQP.Connection.close(state.conn)
+    %AMQP.Connection{pid: pid} = state.conn
+
+    if Process.alive?(pid) do
+      AMQP.Connection.close(state.conn)
+    end
+
     :ok
   end
 
