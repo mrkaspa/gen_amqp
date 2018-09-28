@@ -237,6 +237,10 @@ defmodule GenAMQP.Conn do
     {:reply, :ok, new_state}
   end
 
+  def handle_info({:EXIT, _pid, reason}, state) do
+    {:stop, reason, state}
+  end
+
   def terminate(reason, %{conn_name: conn_name, subscriptions: subscriptions} = state) do
     Logger.info("Closing AMQP Connection reason: #{inspect(reason)}")
 
