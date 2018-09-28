@@ -39,7 +39,7 @@ defmodule GenAMQP.Server do
         children =
           Enum.map(1..unquote(size), fn num ->
             id = :"#{__MODULE__.Worker}_#{num}"
-            worker(__MODULE__.Worker, [id], id: id, restart: :transient, shutdown: 1)
+            worker(__MODULE__.Worker, [id], id: id, shutdown: 1)
           end)
 
         children = children

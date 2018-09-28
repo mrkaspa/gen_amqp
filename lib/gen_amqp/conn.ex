@@ -74,7 +74,6 @@ defmodule GenAMQP.Conn do
 
   def init([name, amqp_url]) do
     Logger.info("Starting connection")
-    Process.flag(:trap_exit, true)
     {:ok, %AMQP.Connection{pid: pid} = conn} = AMQP.Connection.open(amqp_url)
     Process.link(pid)
     Logger.info("Connection linked #{inspect(pid)}")
@@ -235,10 +234,6 @@ defmodule GenAMQP.Conn do
     new_state = %{state | subscriptions: new_subscriptions, queues: new_queues}
 
     {:reply, :ok, new_state}
-  end
-
-  def handle_info({:EXIT, _pid, reason}, state) do
-    {:stop, reason, state}
   end
 
   def terminate(reason, %{conn_name: conn_name, subscriptions: subscriptions} = state) do
