@@ -24,9 +24,9 @@ defmodule GenAMQP.Mixfile do
 
   def application do
     if Mix.env() == :test do
-      [applications: [:logger, :amqp], mod: {DemoApp, []}]
+      [extra_applications: [:logger], mod: {DemoApp, []}]
     else
-      [applications: [:logger, :amqp], mod: {GenAMQP, []}]
+      [extra_applications: [:logger], mod: {GenAMQP, []}]
     end
   end
 
@@ -37,6 +37,7 @@ defmodule GenAMQP.Mixfile do
     [
       {:amqp, "~> 1.0.3"},
       {:uuid, "~> 1.1.1"},
+      {:poolboy, "~> 1.5"},
       {:dialyxir, "~> 0.5", only: :dev},
       {:credo, "~> 0.10", only: :dev},
       {:ex_doc, "~> 0.18.4", only: :dev},

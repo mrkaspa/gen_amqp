@@ -5,7 +5,6 @@ defmodule GenAMQP.Server do
 
   defmacro __using__(opts) do
     event = opts[:event]
-    size = Keyword.get(opts, :size, 10)
     conn_name = Keyword.get(opts, :conn_name, nil)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
     before_funcs = Keyword.get(opts, :before, [])
@@ -36,16 +35,22 @@ defmodule GenAMQP.Server do
       end
 
       def init(_) do
-        children =
-          Enum.map(1..unquote(size), fn num ->
-            id = :"#{__MODULE__.Worker}_#{num}"
-            worker(__MODULE__.Worker, [id], id: id, restart: :transient, shutdown: 1)
-          end)
-
-        children = children
+        name = __MODULE__.Worker
+        pool_name = __MODULE__.Pool
+        sup_name = __MODULE__.Supervisor
+        poolboy_config =  [
+          {:name, {:local, pool_name}},
+          {:worker_module, GenAMQP.PoolWorker},
+          {:size, 10},
+          {:max_overflow, 5}
+        ]
+        children = [
+          :poolboy.child_spec(pool_name, poolboy_config),
+          worker(name, [name, pool_name], id: name, restart: :transient)
+        ]
 
         Logger.info("Starting #{__MODULE__}")
-        supervise(children, strategy: :one_for_one)
+        supervise(children, strategy: :one_for_one, name: sup_name)
       end
 
       def reply(msg), do: {:reply, msg}
@@ -66,11 +71,11 @@ defmodule GenAMQP.Server do
                      |> Enum.join(".")
                      |> String.to_atom()
 
-        def start_link(name) do
-          GenServer.start_link(__MODULE__, [name], name: name)
+        def start_link(name, pool_name) do
+          GenServer.start_link(__MODULE__, [name, pool_name], name: name)
         end
 
-        def init([name]) do
+        def init([name, pool_name]) do
           Logger.info("Starting #{name}")
 
           chan_name = name
@@ -87,7 +92,8 @@ defmodule GenAMQP.Server do
              conn_name: conn_name,
              conn_pid: conn_pid,
              chan_name: chan_name,
-             conn_created: conn_created
+             conn_created: conn_created,
+             pool_name: pool_name
            }}
         end
 
@@ -96,7 +102,8 @@ defmodule GenAMQP.Server do
           {conn_name, conn_pid, false}
         end
 
-        def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name} = state) do
+        def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name, pool_name: pool_name} = state) do
+
           data = %{
             event: unquote(event),
             exec_module: @exec_module,
@@ -108,7 +115,12 @@ defmodule GenAMQP.Server do
             meta: meta
           }
 
-          GenAMQP.PoolWorker.work(data)
+          Task.async(fn ->
+            :poolboy.transaction(
+              pool_name,
+              fn pid -> GenServer.call(pid, {:do_work, data}) end
+            )
+          end)
         end
 
         def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do

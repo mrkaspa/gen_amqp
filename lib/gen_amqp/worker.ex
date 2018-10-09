@@ -2,7 +2,20 @@ defmodule GenAMQP.PoolWorker do
   alias GenAMQP.Conn
   require Logger
 
-  def work(%{
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil, [])
+  end
+
+  def init(_) do
+    {:ok, nil}
+  end
+
+  def handle_call({:do_work, data}, _from, state) do
+    work(data)
+    {:reply, nil, state}
+  end
+
+  defp work(%{
         event: event,
         exec_module: exec_module,
         before_funcs: before_funcs,
