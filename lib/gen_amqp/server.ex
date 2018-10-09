@@ -6,6 +6,7 @@ defmodule GenAMQP.Server do
   defmacro __using__(opts) do
     event = opts[:event]
     conn_name = Keyword.get(opts, :conn_name, nil)
+    size = Keyword.get(opts, :size, 5)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
     before_funcs = Keyword.get(opts, :before, [])
     after_funcs = Keyword.get(opts, :after, [])
@@ -41,8 +42,8 @@ defmodule GenAMQP.Server do
         poolboy_config =  [
           {:name, {:local, pool_name}},
           {:worker_module, GenAMQP.PoolWorker},
-          {:size, 10},
-          {:max_overflow, 5}
+          {:size, unquote(size)},
+          {:max_overflow, round(unquote(size) * 0.2)}
         ]
         children = [
           :poolboy.child_spec(pool_name, poolboy_config),
