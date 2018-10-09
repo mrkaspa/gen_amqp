@@ -25,6 +25,17 @@ defmodule ServerDemo do
   end
 end
 
+defmodule ServerWithDelay do
+  @moduledoc false
+
+  use GenAMQP.Server, event: "server_delay", conn_name: ConnHub, size: 1
+
+  def execute(_) do
+    Process.sleep(2000)
+    {:reply, "ok"}
+  end
+end
+
 defmodule ServerWithCallbacks do
   @moduledoc false
 
@@ -96,6 +107,7 @@ defmodule DemoApp do
           supervisor(ServerDemo, []),
           supervisor(ServerWithHandleDemo, []),
           supervisor(ServerWithCallbacks, []),
+          supervisor(ServerWithDelay, []),
           supervisor(ServerCrash, [])
         ]
 

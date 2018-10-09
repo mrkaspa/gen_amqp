@@ -119,7 +119,9 @@ defmodule GenAMQP.Server do
           Task.async(fn ->
             :poolboy.transaction(
               pool_name,
-              fn pid -> GenServer.call(pid, {:do_work, data}) end
+              fn pid ->
+                GenServer.call(pid, {:do_work, data})
+              end
             )
           end)
         end

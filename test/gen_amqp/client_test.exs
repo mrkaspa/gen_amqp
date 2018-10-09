@@ -11,6 +11,15 @@ defmodule GenAMQP.ClientTest do
     end
   end
 
+  describe "server with delay" do
+    test "does not get a response" do
+      Client.publish_with_conn(@conn_name, "server_delay", "")
+      Client.publish_with_conn(@conn_name, "server_delay", "")
+      Client.publish_with_conn(@conn_name, "server_delay", "")
+      assert Client.call_with_conn(@conn_name, "server_delay", "", max_time: 10_000) == {:error, :timeout}
+    end
+  end
+
   describe "with static conn" do
     test "get a response" do
       assert Client.call_with_conn(@conn_name, "server_demo", "") == "ok"
