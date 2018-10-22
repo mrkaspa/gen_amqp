@@ -269,7 +269,8 @@ defmodule GenAMQP.Conn do
   @spec consume(pid, struct, String.t()) :: String.t()
   defp consume(pid, chan, exchange) do
     {:ok, %{queue: queue_name}} = AMQP.Queue.declare(chan, exchange, durable: false)
-    {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: true)
+    # no_ack: false the message has to be acknowledged
+    {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: false)
     queue_name
   end
 

@@ -39,12 +39,14 @@ defmodule GenAMQP.Server do
         name = __MODULE__.Worker
         pool_name = __MODULE__.Pool
         sup_name = __MODULE__.Supervisor
-        poolboy_config =  [
+
+        poolboy_config = [
           {:name, {:local, pool_name}},
           {:worker_module, GenAMQP.PoolWorker},
           {:size, unquote(size)},
           {:max_overflow, round(unquote(size) * 0.2)}
         ]
+
         children = [
           :poolboy.child_spec(pool_name, poolboy_config),
           worker(name, [name, pool_name], id: name, restart: :transient)
@@ -103,8 +105,11 @@ defmodule GenAMQP.Server do
           {conn_name, conn_pid, false}
         end
 
-        def on_message(payload, meta, %{conn_name: conn_name, chan_name: chan_name, pool_name: pool_name} = state) do
-
+        def on_message(
+              payload,
+              meta,
+              %{conn_name: conn_name, chan_name: chan_name, pool_name: pool_name} = state
+            ) do
           data = %{
             event: unquote(event),
             exec_module: @exec_module,
@@ -120,6 +125,7 @@ defmodule GenAMQP.Server do
             :poolboy.transaction(
               pool_name,
               fn pid ->
+                AMQP.Basic.ack(channel, meta.delivery_tag)
                 GenServer.call(pid, {:do_work, data})
               end
             )
