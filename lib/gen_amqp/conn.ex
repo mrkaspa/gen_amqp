@@ -11,7 +11,7 @@ defmodule GenAMQP.Conn do
   @doc """
   Starts the connection
   """
-  # @spec start_link(binary(), GenServer.name()) :: GenServer.on_start()
+  @spec start_link(String.t(), GenServer.name()) :: GenServer.on_start()
   def start_link(conn_url, name) do
     Logger.info("Crearing conn with name: #{name} and url #{conn_url}")
     GenServer.start_link(__MODULE__, [name, conn_url], name: name)

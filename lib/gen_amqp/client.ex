@@ -5,7 +5,7 @@ defmodule GenAMQP.Client do
 
   alias GenAMQP.{Conn, Chan}
 
-  # @spec call_with_conn(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
+  @spec call_with_conn(GenServer.name(), String.t(), String.t(), String.t(), Keyword.t()) :: any
   def call_with_conn(conn_name, exchange, route, payload, opts \\ []) when is_binary(payload) do
     max_time = Keyword.get(opts, :max_time, 5_000)
 
@@ -15,7 +15,8 @@ defmodule GenAMQP.Client do
     end)
   end
 
-  # @spec publish_with_conn(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
+  @spec publish_with_conn(GenServer.name(), String.t(), String.t(), String.t(), Keyword.t()) ::
+          any
   def publish_with_conn(conn_name, exchange, route, payload, opts \\ [])
       when is_binary(payload) do
     around_chan(conn_name, fn chan ->
