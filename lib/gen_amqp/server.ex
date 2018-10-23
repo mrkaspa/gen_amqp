@@ -62,7 +62,7 @@ defmodule GenAMQP.Server do
 
       defmodule Worker do
         use GenServer
-        alias GenAMQP.Conn
+        alias GenAMQP.{Conn, Chan}
 
         @exec_module __MODULE__
                      |> Atom.to_string()
@@ -86,14 +86,15 @@ defmodule GenAMQP.Server do
 
           {conn_name, conn_pid, conn_created} = start_conn(name, unquote(conn_name))
 
-          :ok = Conn.create_chan(conn_name, chan_name)
-          :ok = Conn.subscribe(conn_name, unquote(event), chan_name)
+          {:ok, chan} = Conn.create_chan(conn_name, chan_name)
+          :ok = Chan.subscribe(conn_name, chan, unquote(event), self())
 
           {:ok,
            %{
              consumer_tag: nil,
              conn_name: conn_name,
              conn_pid: conn_pid,
+             chan: chan,
              chan_name: chan_name,
              conn_created: conn_created,
              pool_name: pool_name
@@ -108,7 +109,7 @@ defmodule GenAMQP.Server do
         def on_message(
               payload,
               meta,
-              %{conn_name: conn_name, chan_name: chan_name, pool_name: pool_name} = state
+              %{conn_name: conn_name, chan: chan, pool_name: pool_name} = state
             ) do
           data = %{
             event: unquote(event),
@@ -116,7 +117,7 @@ defmodule GenAMQP.Server do
             before_funcs: unquote(before_funcs),
             after_funcs: unquote(after_funcs),
             conn_name: conn_name,
-            chan_name: chan_name,
+            chan: chan,
             payload: payload,
             meta: meta
           }
@@ -125,17 +126,20 @@ defmodule GenAMQP.Server do
             :poolboy.transaction(
               pool_name,
               fn pid ->
-                AMQP.Basic.ack(channel, meta.delivery_tag)
+                AMQP.Basic.ack(chan, meta.delivery_tag)
                 GenServer.call(pid, {:do_work, data})
               end
             )
           end)
         end
 
-        def handle_cast(:reconnect, %{conn_name: conn_name, chan_name: chan_name} = state) do
+        def handle_cast(
+              :reconnect,
+              %{conn_name: conn_name, chan_name: chan_name, chan: chan} = state
+            ) do
           Logger.info("Server #{chan_name} reconnecting to #{conn_name}")
-          :ok = Conn.create_chan(conn_name, chan_name)
-          :ok = Conn.subscribe(conn_name, unquote(event), chan_name)
+          {:ok, chan} = Conn.create_chan(conn_name, chan_name)
+          :ok = Chan.subscribe(conn_name, chan, unquote(event), self())
           {:noreply, state}
         end
 

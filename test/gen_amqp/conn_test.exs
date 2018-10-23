@@ -1,6 +1,6 @@
 defmodule GenAMQP.ConnTest do
   use ExUnit.Case
-  alias GenAMQP.Conn
+  alias GenAMQP.{Conn, Chan}
   use GenDebug
 
   setup_all do
@@ -31,7 +31,7 @@ defmodule GenAMQP.ConnTest do
   end
 
   test "should create and delete a channel", %{pid: pid} do
-    :ok = Conn.create_chan(pid, :demo)
+    {:ok, _} = Conn.create_chan(pid, :demo)
     chans = state(pid)[:chans]
     assert Enum.count(chans) == 2
 
@@ -41,22 +41,22 @@ defmodule GenAMQP.ConnTest do
   end
 
   test "should publish", %{pid: pid} do
-    :ok = Conn.create_chan(pid, :demo)
-    assert Conn.publish(pid, "encrypt", "demo", :demo) == :ok
+    {:ok, chan} = Conn.create_chan(pid, :demo)
+    assert Chan.publish(chan, "", "encrypt", "demo") == :ok
   end
 
   test "should subscribe", %{pid: pid} do
-    :ok = Conn.create_chan(pid, :demo)
-    assert Conn.subscribe(pid, "encrypt", :demo) == :ok
-    Conn.publish(pid, "encrypt", "demo", :demo)
+    {:ok, chan} = Conn.create_chan(pid, :demo)
+    assert Chan.subscribe(pid, chan, "encrypt", self()) == :ok
+    Chan.publish(chan, "", "encrypt", "demo")
     assert_receive {:basic_deliver, "demo", _}
   end
 
   test "should unsubscribe", %{pid: pid} do
-    :ok = Conn.create_chan(pid, :demo)
-    Conn.subscribe(pid, "encrypt", :demo)
-    assert Conn.unsubscribe(pid, "encrypt", :demo) == :ok
-    Conn.publish(pid, "encrypt", "demo", :demo)
+    {:ok, chan} = Conn.create_chan(pid, :demo)
+    assert Chan.subscribe(pid, chan, "encrypt", self()) == :ok
+    assert Chan.unsubscribe(pid, chan, "encrypt", :demo) == :ok
+    Chan.publish(chan, "", "encrypt", "demo")
     refute_receive {:basic_deliver, "demo", _}
   end
 
