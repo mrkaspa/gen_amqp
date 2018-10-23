@@ -54,6 +54,7 @@ defmodule GenAMQP.ConnTest do
 
   test "should unsubscribe", %{pid: pid} do
     {:ok, chan} = Conn.create_chan(pid, :demo)
+    AMQP.Queue.delete(chan, "encrypt")
     assert Chan.subscribe(pid, chan, "encrypt", self()) == :ok
     assert Chan.unsubscribe(pid, chan, "encrypt", :demo) == :ok
     Chan.publish(chan, "", "encrypt", "demo")
