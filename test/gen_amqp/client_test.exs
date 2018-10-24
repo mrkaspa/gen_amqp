@@ -6,29 +6,43 @@ defmodule GenAMQP.ClientTest do
 
   describe "server with handle" do
     test "get a response" do
-      assert Client.call_with_conn(@conn_name, "server_handle_demo", "", max_time: 10_000) ==
+      assert Client.call_with_conn(@conn_name, "", "server_handle_demo", "", max_time: 10_000) ==
                "error"
+    end
+  end
+
+  describe "server with delay" do
+    test "does not get a response" do
+      Client.publish_with_conn(@conn_name, "", "server_delay", "")
+      Client.publish_with_conn(@conn_name, "", "server_delay", "")
+      Client.publish_with_conn(@conn_name, "", "server_delay", "")
+
+      assert Client.call_with_conn(@conn_name, "", "server_delay", "", max_time: 10_000) ==
+               {:error, :timeout}
+
+      assert Client.call_with_conn(@conn_name, "", "server_delay", "", max_time: 10_000) == "ok"
     end
   end
 
   describe "with static conn" do
     test "get a response" do
-      assert Client.call_with_conn(@conn_name, "server_demo", "") == "ok"
+      assert Client.call_with_conn(@conn_name, "", "server_demo", "") == "ok"
     end
 
     test "it crashes" do
-      resp = Client.call_with_conn(@conn_name, "crash", "")
+      resp = Client.call_with_conn(@conn_name, "", "crash", "")
       data = Poison.decode!(resp)
       assert data["status"] == "error"
     end
 
     test "publish a message" do
-      Client.publish_with_conn(@conn_name, "server_demo", "")
+      Client.publish_with_conn(@conn_name, "", "server_demo", "")
     end
 
     test "get a response with app_id option" do
       assert Client.call_with_conn(
                @conn_name,
+               "",
                "server_demo",
                "",
                max_time: 10_000,
@@ -37,14 +51,17 @@ defmodule GenAMQP.ClientTest do
     end
 
     test "publish a message with app_id option" do
-      Client.publish_with_conn(@conn_name, "server_demo", "", app_id: "v1.0")
+      Client.publish_with_conn(@conn_name, "", "server_demo", "", app_id: "v1.0")
     end
   end
 
   describe "with before and after" do
     test "calls the server" do
       Agent.start(fn -> 0 end, name: Agt)
-      assert Client.call_with_conn(@conn_name, "server_callback_demo", "", app_id: "v1.0") == "ok"
+
+      assert Client.call_with_conn(@conn_name, "", "server_callback_demo", "", app_id: "v1.0") ==
+               "ok"
+
       assert Agent.get(Agt, & &1) == 2
       Agent.stop(Agt)
     end

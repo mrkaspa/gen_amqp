@@ -9,8 +9,8 @@ defmodule GenAMQP.ServerTest do
   test "the static connection should have one channel" do
     conn_name = ConnHub
     chans = state(conn_name)[:chans]
-    assert Enum.count(chans) == 41
-    assert chans[ServerDemo.Worker_1] != nil
+    assert Enum.count(chans) == 6
+    assert chans[ServerDemo.Worker] != nil
   end
 
   test "count the childrens connections" do
