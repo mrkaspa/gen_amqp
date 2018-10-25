@@ -38,11 +38,8 @@ defmodule GenAMQP.Mixfile do
       {:amqp, "~> 1.0.3"},
       {:uuid, "~> 1.1.1"},
       {:poolboy, "~> 1.5"},
-      {:dialyxir, "~> 0.5", only: :dev},
-      {:credo, "~> 0.10", only: :dev},
-      {:ex_doc, "~> 0.18.4", only: :dev},
+      {:ex_doc, "~> 0.19.1", only: :dev},
       {:poison, "~> 3.0", only: :test},
-      {:excoveralls, "~> 0.9", only: :test},
       {:gen_debug, "~> 0.2.0", only: :test}
     ]
   end
