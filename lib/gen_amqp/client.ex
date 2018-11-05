@@ -3,22 +3,24 @@ defmodule GenAMQP.Client do
   Client for consuming AMQP services
   """
 
-  alias GenAMQP.Conn
+  alias GenAMQP.{Conn, Chan}
 
-  @spec call_with_conn(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
-  def call_with_conn(conn_name, exchange, payload, opts \\ []) when is_binary(payload) do
+  @spec call_with_conn(GenServer.name(), String.t(), String.t(), String.t(), Keyword.t()) :: any
+  def call_with_conn(conn_name, exchange, route, payload, opts \\ []) when is_binary(payload) do
     max_time = Keyword.get(opts, :max_time, 5_000)
 
     around_chan(conn_name, fn chan ->
-      {:ok, correlation_id} = Conn.request(conn_name, exchange, payload, chan)
+      {:ok, correlation_id} = Chan.request(chan, exchange, route, payload, self(), opts)
       wait_response(correlation_id, max_time)
     end)
   end
 
-  @spec publish_with_conn(GenServer.name(), String.t(), String.t(), Keyword.t()) :: any
-  def publish_with_conn(conn_name, exchange, payload, _opts \\ []) when is_binary(payload) do
+  @spec publish_with_conn(GenServer.name(), String.t(), String.t(), String.t(), Keyword.t()) ::
+          any
+  def publish_with_conn(conn_name, exchange, route, payload, opts \\ [])
+      when is_binary(payload) do
     around_chan(conn_name, fn chan ->
-      Conn.publish(conn_name, exchange, payload, chan)
+      Chan.publish(chan, exchange, route, payload, opts)
     end)
   end
 

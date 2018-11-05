@@ -1,17 +1,29 @@
 defmodule GenAMQP.PoolWorker do
-  alias GenAMQP.Conn
+  alias GenAMQP.Chan
   require Logger
 
-  def work(%{
-        event: event,
-        exec_module: exec_module,
-        before_funcs: before_funcs,
-        after_funcs: after_funcs,
-        conn_name: conn_name,
-        chan_name: chan_name,
-        payload: payload,
-        meta: meta
-      }) do
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil, [])
+  end
+
+  def init(_) do
+    {:ok, nil}
+  end
+
+  def handle_call({:do_work, data}, _from, state) do
+    work(data)
+    {:reply, nil, state}
+  end
+
+  defp work(%{
+         event: event,
+         exec_module: exec_module,
+         before_funcs: before_funcs,
+         after_funcs: after_funcs,
+         chan: chan,
+         payload: payload,
+         meta: meta
+       }) do
     payload = reduce_with_funcs(before_funcs, event, payload)
 
     {reply?, resp} =
@@ -63,26 +75,25 @@ defmodule GenAMQP.PoolWorker do
     resp = reduce_with_funcs(after_funcs, event, resp)
 
     if reply? do
-      reply(conn_name, chan_name, meta, resp)
+      reply(chan, meta, resp)
     end
   end
 
   defp reply(
-         _conn_name,
-         _chan_name,
+         _chan,
          %{reply_to: :undefined, correlation_id: :undefined},
          _resp
        ),
        do: nil
 
-  defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp)
+  defp reply(chan, %{reply_to: _, correlation_id: _} = meta, resp)
        when is_binary(resp) do
-    Conn.response(conn_name, meta, resp, chan_name)
+    Chan.response(chan, meta, resp)
   end
 
-  defp reply(conn_name, chan_name, %{reply_to: _, correlation_id: _} = meta, resp) do
+  defp reply(chan, %{reply_to: _, correlation_id: _} = meta, resp) do
     Logger.error("message in wrong type #{inspect(resp)}")
-    Conn.response(conn_name, meta, create_error("message in wrong type"), chan_name)
+    Chan.response(chan, meta, create_error("message in wrong type"))
   end
 
   defp create_error(args) do
