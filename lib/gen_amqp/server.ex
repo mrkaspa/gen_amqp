@@ -19,15 +19,15 @@ defmodule GenAMQP.Server do
 
       # Default callbacks implementations
 
-      def handle(data) do
-        Logger.warn(
-          "Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function"
-        )
+      # def handle(data) do
+      #   Logger.warn(
+      #     "Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function"
+      #   )
 
-        :noreply
-      end
+      #   :noreply
+      # end
 
-      defoverridable handle: 1
+      # defoverridable handle: 1
 
       # Public API
 
