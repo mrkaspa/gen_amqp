@@ -122,7 +122,7 @@ defmodule GenAMQP.Server do
             meta: meta
           }
 
-          Task.async(fn ->
+          spawn(fn ->
             :poolboy.transaction(
               pool_name,
               fn pid ->
@@ -150,11 +150,6 @@ defmodule GenAMQP.Server do
 
         def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, state) do
           {:noreply, %{state | consumer_tag: consumer_tag}}
-        end
-
-        def handle_info(message, state) do
-          Logger.info("Unhandle message in #{__MODULE__} = #{inspect(message)}")
-          {:noreply, state}
         end
 
         def terminate(reason, %{conn_pid: conn_pid, conn_created: true} = _state) do
