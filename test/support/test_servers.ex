@@ -20,6 +20,7 @@ defmodule ServerDemo do
 
   use GenAMQP.Server, event: "server_demo", conn_name: ConnHub
 
+  @impl true
   def execute(_) do
     {:reply, "ok"}
   end
@@ -30,6 +31,7 @@ defmodule ServerWithDelay do
 
   use GenAMQP.Server, event: "server_delay", conn_name: ConnHub, size: 1
 
+  @impl true
   def execute(_) do
     Process.sleep(2000)
     {:reply, "ok"}
@@ -55,6 +57,7 @@ defmodule ServerWithCallbacks do
       end
     ]
 
+  @impl true
   def execute(_) do
     {:reply, "ok"}
   end
@@ -67,12 +70,14 @@ defmodule ServerWithHandleDemo do
     event: "server_handle_demo",
     conn_name: ConnHub
 
+  @impl true
   def execute(_) do
     with {:ok, _} <- {:error, "error"} do
       {:reply, "ok"}
     end
   end
 
+  @impl true
   def handle({:error, cause}) do
     {:reply, cause}
   end
@@ -85,6 +90,7 @@ defmodule ServerCrash do
     event: "crash",
     conn_name: ConnHub
 
+  @impl true
   def execute(_) do
     raise "error"
   end

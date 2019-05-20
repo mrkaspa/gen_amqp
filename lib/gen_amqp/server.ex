@@ -35,6 +35,7 @@ defmodule GenAMQP.Server do
         Supervisor.start_link(__MODULE__, [], name: __MODULE__)
       end
 
+      @impl true
       def init(_) do
         name = __MODULE__.Worker
         pool_name = __MODULE__.Pool
@@ -53,7 +54,7 @@ defmodule GenAMQP.Server do
         ]
 
         Logger.info("Starting #{__MODULE__}")
-        supervise(children, strategy: :one_for_one, name: sup_name)
+        Supervisor.init(children, strategy: :one_for_one, name: sup_name)
       end
 
       def reply(msg), do: {:reply, msg}
