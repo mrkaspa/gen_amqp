@@ -96,9 +96,12 @@ defmodule GenAMQP.PoolWorker do
     Chan.response(chan, meta, create_error("message in wrong type"))
   end
 
+  def error_handler() do
+    Application.get_env(:gen_amqp, :error_handler)
+  end
+
   defp create_error(args) do
-    module = Application.get_env(:gen_amqp, :error_handler)
-    sol = apply(module, :handle, args)
+    sol = apply(error_handler(), :handle, args)
     IO.puts("SOL = #{inspect(sol)}")
     sol
   end
