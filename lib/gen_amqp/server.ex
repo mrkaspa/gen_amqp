@@ -8,6 +8,7 @@ defmodule GenAMQP.Server do
     conn_name = Keyword.get(opts, :conn_name, nil)
     size = Keyword.get(opts, :size, 5)
     dynamic_sup_name = Keyword.get(opts, :conn_supervisor, nil)
+    extra_args = Keyword.get(opts, :extra_args, [])
     before_funcs = Keyword.get(opts, :before, [])
     after_funcs = Keyword.get(opts, :after, [])
 
@@ -88,7 +89,7 @@ defmodule GenAMQP.Server do
           {conn_name, conn_pid, conn_created} = start_conn(name, unquote(conn_name))
 
           {:ok, chan} = Conn.create_chan(conn_name, chan_name)
-          :ok = Chan.subscribe(conn_name, chan, unquote(event), self())
+          :ok = Chan.subscribe(conn_name, chan, unquote(event), self(), unquote(extra_args))
 
           {:ok,
            %{
@@ -140,7 +141,7 @@ defmodule GenAMQP.Server do
             ) do
           Logger.info("Server #{chan_name} reconnecting to #{conn_name}")
           {:ok, chan} = Conn.create_chan(conn_name, chan_name)
-          :ok = Chan.subscribe(conn_name, chan, unquote(event), self())
+          :ok = Chan.subscribe(conn_name, chan, unquote(event), self(), unquote(extra_args))
           {:noreply, state}
         end
 

@@ -39,8 +39,8 @@ defmodule GenAMQP.Chan do
     )
   end
 
-  def subscribe(conn_name, chan, queue_name, pid) do
-    with {:ok, _} <- AMQP.Queue.declare(chan, queue_name, durable: false),
+  def subscribe(conn_name, chan, queue_name, pid, arguments \\ []) do
+    with {:ok, _} <- AMQP.Queue.declare(chan, queue_name, durable: false, arguments: arguments),
          {:ok, _} = AMQP.Basic.consume(chan, queue_name, pid, no_ack: false) do
       Conn.add_subscription(conn_name, pid)
       :ok
