@@ -28,21 +28,12 @@ defmodule GenAMQP.PoolWorker do
 
     {reply?, resp} =
       try do
-        case apply(exec_module, :execute, [payload]) do
+        case apply(exec_module, :execute, [payload, %{event: event}]) do
           {:reply, resp} ->
             {true, resp}
 
           :noreply ->
             {false, nil}
-
-          other ->
-            case apply(exec_module, :handle, [other]) do
-              {:reply, resp} ->
-                {true, resp}
-
-              :noreply ->
-                {false, nil}
-            end
         end
       rescue
         e ->
@@ -86,12 +77,12 @@ defmodule GenAMQP.PoolWorker do
        ),
        do: nil
 
-  defp reply(chan, %{reply_to: _, correlation_id: _} = meta, resp)
+  defp reply(chan, %{reply_to: _, correlation_id: _} = meta, [resp, _ctx])
        when is_binary(resp) do
     Chan.response(chan, meta, resp)
   end
 
-  defp reply(chan, %{reply_to: _, correlation_id: _} = meta, resp) do
+  defp reply(chan, %{reply_to: _, correlation_id: _} = meta, [resp, _ctx]) do
     Logger.error("message in wrong type #{inspect(resp)}")
     Chan.response(chan, meta, create_error(["message in wrong type"]))
   end

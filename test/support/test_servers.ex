@@ -21,7 +21,7 @@ defmodule ServerDemo do
   use GenAMQP.Server, event: "server_demo", conn_name: ConnHub
 
   @impl true
-  def execute(_) do
+  def execute(_params, _ctx) do
     {:reply, "ok"}
   end
 end
@@ -32,7 +32,7 @@ defmodule ServerWithDelay do
   use GenAMQP.Server, event: "server_delay", conn_name: ConnHub, size: 1
 
   @impl true
-  def execute(_) do
+  def execute(_params, _ctx) do
     Process.sleep(2000)
     {:reply, "ok"}
   end
@@ -45,41 +45,21 @@ defmodule ServerWithCallbacks do
     event: "server_callback_demo",
     conn_name: ConnHub,
     before: [
-      fn _event, payload ->
+      fn payload, ctx ->
         Agent.update(Agt, fn n -> n + 1 end)
-        payload
+        [payload, ctx]
       end
     ],
     after: [
-      fn _event, payload ->
+      fn payload, ctx ->
         Agent.update(Agt, fn n -> n + 1 end)
-        payload
+        [payload, ctx]
       end
     ]
 
   @impl true
-  def execute(_) do
+  def execute(_params, _ctx) do
     {:reply, "ok"}
-  end
-end
-
-defmodule ServerWithHandleDemo do
-  @moduledoc false
-
-  use GenAMQP.Server,
-    event: "server_handle_demo",
-    conn_name: ConnHub
-
-  @impl true
-  def execute(_) do
-    with {:ok, _} <- {:error, "error"} do
-      {:reply, "ok"}
-    end
-  end
-
-  @impl true
-  def handle({:error, cause}) do
-    {:reply, cause}
   end
 end
 
@@ -91,7 +71,7 @@ defmodule ServerCrash do
     conn_name: ConnHub
 
   @impl true
-  def execute(_) do
+  def execute(_params, _ctx) do
     raise "error"
   end
 end
@@ -111,7 +91,6 @@ defmodule DemoApp do
       specs ++
         [
           supervisor(ServerDemo, []),
-          supervisor(ServerWithHandleDemo, []),
           supervisor(ServerWithCallbacks, []),
           supervisor(ServerWithDelay, []),
           supervisor(ServerCrash, [])

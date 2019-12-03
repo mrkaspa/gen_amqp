@@ -18,18 +18,6 @@ defmodule GenAMQP.Server do
 
       @behaviour GenAMQP.Server.Behaviour
 
-      # Default callbacks implementations
-
-      def handle(data) do
-        Logger.warn(
-          "Not handling #{inspect(data)} in #{__MODULE__}, please declare a handle function"
-        )
-
-        :noreply
-      end
-
-      defoverridable handle: 1
-
       # Public API
 
       def start_link() do
@@ -178,8 +166,6 @@ defmodule GenAMQP.Server do
     Behaviour to implement by the servers
     """
 
-    @callback execute(any()) :: {:reply, any()} | :noreply
-
-    @callback handle(any()) :: {:reply, any()} | :noreply
+    @callback execute(any(), map()) :: {:reply, any()} | :noreply
   end
 end

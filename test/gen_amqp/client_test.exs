@@ -4,13 +4,6 @@ defmodule GenAMQP.ClientTest do
 
   @conn_name ConnHub
 
-  describe "server with handle" do
-    test "get a response" do
-      assert Client.call_with_conn(@conn_name, "", "server_handle_demo", "", max_time: 10_000) ==
-               "error"
-    end
-  end
-
   describe "server with delay" do
     test "does not get a response" do
       Client.publish_with_conn(@conn_name, "", "server_delay", "")
