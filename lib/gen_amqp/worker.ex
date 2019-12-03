@@ -93,7 +93,7 @@ defmodule GenAMQP.PoolWorker do
 
   defp reply(chan, %{reply_to: _, correlation_id: _} = meta, resp) do
     Logger.error("message in wrong type #{inspect(resp)}")
-    Chan.response(chan, meta, create_error("message in wrong type"))
+    Chan.response(chan, meta, create_error(["message in wrong type"]))
   end
 
   def error_handler() do
@@ -107,8 +107,8 @@ defmodule GenAMQP.PoolWorker do
   end
 
   defp reduce_with_funcs(funcs, event, payload) do
-    Enum.reduce(funcs, payload, fn f, acc ->
-      f.(event, acc)
+    Enum.reduce(funcs, [payload, %{event: event}], fn f, acc ->
+      apply(f, acc)
     end)
   end
 end
