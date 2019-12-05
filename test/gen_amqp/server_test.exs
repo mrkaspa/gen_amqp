@@ -3,7 +3,7 @@ defmodule GenAMQP.ServerTest do
   use GenDebug
 
   test "should be alive" do
-    assert Elixir.ServerDemo |> Process.whereis() |> Process.alive?() == true
+    assert Elixir.ServerDemo.Supervisor |> Process.whereis() |> Process.alive?() == true
   end
 
   test "the static connection should have one channel" do
