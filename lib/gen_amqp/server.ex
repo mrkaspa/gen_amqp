@@ -11,12 +11,13 @@ defmodule GenAMQP.Server do
     extra_args = Keyword.get(opts, :extra_args, [])
     before_funcs = Keyword.get(opts, :before, [])
     after_funcs = Keyword.get(opts, :after, [])
+    behaviour = Keyword.get(opts, :behaviour, GenAMQP.Server.Behaviour)
 
     quote do
       require Logger
       use Supervisor
 
-      @behaviour GenAMQP.Server.Behaviour
+      @behaviour unquote(behaviour)
 
       # Public API
 

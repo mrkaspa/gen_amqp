@@ -24,11 +24,11 @@ defmodule GenAMQP.PoolWorker do
          payload: payload,
          meta: meta
        }) do
-    payload = reduce_with_funcs(before_funcs, event, payload)
+    acc = reduce_with_funcs(before_funcs, event, payload)
 
     {reply?, resp} =
       try do
-        case apply(exec_module, :execute, [payload, %{event: event}]) do
+        case apply(exec_module, :execute, acc) do
           {:reply, resp} ->
             {true, resp}
 
