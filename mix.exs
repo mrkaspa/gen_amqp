@@ -35,11 +35,11 @@ defmodule GenAMQP.Mixfile do
 
   defp deps do
     [
-      {:amqp, "~> 1.1.1"},
+      {:amqp, "~> 1.4"},
       {:elixir_uuid, "~> 1.2"},
       {:poolboy, "~> 1.5"},
-      {:ex_doc, "~> 0.19", only: :dev},
-      {:poison, "~> 3.0", only: :test},
+      {:ex_doc, "~> 0.21.2", only: :dev},
+      {:poison, "~> 4.0", only: :test},
       {:gen_debug, "~> 0.2.0", only: :test}
     ]
   end
