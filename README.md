@@ -10,7 +10,7 @@ Add `gen_amqp` to your list of dependencies in `mix.exs`:
 
   ```elixir
   def deps do
-    [{:gen_amqp, "~> 5.0.0"}]
+    [{:gen_amqp, "~> 7.0.0"}]
   end
 
   def application do
