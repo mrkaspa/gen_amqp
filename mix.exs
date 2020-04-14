@@ -4,7 +4,7 @@ defmodule GenAMQP.Mixfile do
   def project do
     [
       app: :gen_amqp,
-      version: "6.0.0",
+      version: "6.0.1",
       elixir: ">= 1.8.0",
       description: description(),
       package: package(),

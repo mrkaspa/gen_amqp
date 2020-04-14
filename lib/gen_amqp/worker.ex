@@ -48,6 +48,7 @@ defmodule GenAMQP.PoolWorker do
         e ->
           Logger.error("STACKTRACE - RESCUE")
           st = System.stacktrace()
+          Logger.error("EXCEPTION: #{Exception.message(e)}")
           Logger.error(inspect(st))
 
           case create_error([e, st]) do
