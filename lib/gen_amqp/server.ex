@@ -129,7 +129,7 @@ defmodule GenAMQP.Server do
               pool_name,
               fn pid ->
                 AMQP.Basic.ack(chan, meta.delivery_tag)
-                GenServer.call(pid, {:do_work, data})
+                GenServer.call(pid, {:do_work, data}, :infinity)
               end
             )
           end)
