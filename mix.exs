@@ -35,7 +35,7 @@ defmodule GenAMQP.Mixfile do
 
   defp deps do
     [
-      {:amqp, "~> 1.1.1"},
+      {:amqp, "~> 1.2.2"},
       {:elixir_uuid, "~> 1.2"},
       {:poolboy, "~> 1.5"},
       {:ex_doc, "~> 0.19", only: :dev},
